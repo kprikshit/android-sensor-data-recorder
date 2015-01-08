@@ -46,9 +46,9 @@ public class About extends ActionBarActivity {
     //Data for the recycler view list
     public List<Information> getData(){
         List<Information> data = new ArrayList<>();
-        int[] pics = {R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic};
-        String[] names={"Prikshit","Pankaj","Parmeet","Prikshit","Pankaj","Parmeet","Prikshit","Pankaj","Parmeet","Prikshit","Pankaj","Parmeet"};
-        String[] emails={"kprikshit22","as","ss","kprikshit22","as","ss","kprikshit22","as","ss","kprikshit22","as","ss"};
+        int[] pics = {R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic};
+        String[] names={"Prikshit","Pankaj","Parmeet"};
+        String[] emails={"kprikshit22","as","ss"};
         for(int i=0;i<pics.length;i++){
             Information info = new Information();
             info.picId=pics[i];
