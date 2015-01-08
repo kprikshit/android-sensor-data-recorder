@@ -10,11 +10,19 @@
         layout="@layout/app_bar" />
 
     <TextView
+        android:id="@+id/txtvw1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_below="@+id/app_bar"
-        android:text="@string/hello_world" />
+        android:text="@string/hello_world"
+        android:layout_alignTop="@+id/imageView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_below="@+id/app_bar"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/imageView" />
 </RelativeLayout>
