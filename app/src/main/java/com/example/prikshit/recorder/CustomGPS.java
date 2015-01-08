@@ -83,4 +83,11 @@ public class CustomGPS implements
     public Location getLastLocation(){
         return this.lastLocation;
     }
+
+    /**
+     * removing location requests
+     */
+    public void unregisterListener(){
+        locationManager.removeUpdates(this);
+    }
 }

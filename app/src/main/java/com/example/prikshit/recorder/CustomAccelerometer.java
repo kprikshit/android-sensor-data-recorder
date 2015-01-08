@@ -45,4 +45,9 @@ public class CustomAccelerometer implements SensorEventListener {
     public String getLastReadingString(){
         return String.format("%.3f",lastReading[0]) + "," + String.format("%.3f",lastReading[1]) + "," + String.format("%.3f",lastReading[2]);
     }
+
+    public void unregisterListener(){
+        sensorManager.unregisterListener(this);
+    }
+
 }

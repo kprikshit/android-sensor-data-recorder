@@ -41,4 +41,8 @@ public class CustomLightSensor implements SensorEventListener {
     public String getLastReadingString(){
         return String.format("%.3f",lastReading);
     }
+
+    public void unregisterListener(){
+        sensorManager.unregisterListener(this);
+    }
 }

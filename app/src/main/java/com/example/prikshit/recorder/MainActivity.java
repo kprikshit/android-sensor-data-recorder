@@ -1,5 +1,6 @@
 package com.example.prikshit.recorder;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -33,86 +34,21 @@ import java.util.List;
  * The Main Activity of App
  * Uses Sensor Information
  */
-public class MainActivity extends ActionBarActivity implements SensorEventListener {
-
-    /***
-     * File Read Write Information
-     */
-    String fileName="data1.txt";
-    private File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Data_Recorder");
-    private File dataFile = new File(directory, fileName);
-    private FileOutputStream dataOutput;
-
-    /**
-     * Custom Defined Primary Sensors
-     * Accelerometer is not used because we will be using this sensor in this java file only
-     */
-    private CustomGyroScope gyroScope;
-    private CustomLightSensor lightSensor;
-    private CustomMagnetometer magnetometer;
-    private CustomGPS gpsSensor;
+public class MainActivity extends ActionBarActivity {
 
     private Toolbar toolbar;
-    //Secondary Sensors: NOT YET USED
-    private Sensor gravity, linearAccel, rotationVector;
-
-    // For accelerometer sensor in this file
-    private Sensor accelSensor;
-    private SensorManager sensorManager;
-
-    // the time when lastSensorData was updated
-    private long lastSensorUpdate;
-    /**
-     * Minimum Time to add new data in milliseconds
-     */
-    private long minUpdateDelay = 2;
-
-    // Sensor Update Settings
-    private int sensorReadingDelay =  SensorManager.SENSOR_DELAY_FASTEST;
-
-    // Storing root for future purposes
-    Context rootContext;
-
-    /**
-     * For various switched
-     */
     private boolean isDisplayDataEnabled = false;
     private boolean isRecordDataEnabled =  false;
-
-    /**
-     * Format of TimeStamp to be used in data appending
-     */
-    SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy:MM:dd:hh:mm:ss.SSS");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //saving this context for future purposes
-        rootContext = this;
-
-        /**
-         * Initializing Sensors and Listener
-         */
-        gyroScope = new CustomGyroScope(this);
-        lightSensor = new CustomLightSensor(this);
-        magnetometer = new CustomMagnetometer(this);
-        gpsSensor = new CustomGPS(this);
-
-        /**
-         * Custom Action Bar / App Bar / Tool Bar
-         */
         toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this,accelSensor,SensorManager.SENSOR_DELAY_FASTEST);
-
-
         /**
-         * Initially, the sensorData Card is not displayed.
+         * Initially, the CardView gpsDataCard and sensorData are not displayed
          */
         final CardView sensorDataCard = (CardView) findViewById(R.id.sensorCard);
         final CardView gpsDataCard = (CardView) findViewById(R.id.gpsDataCard);
@@ -126,15 +62,37 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
          */
         Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
         Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
+
+        /**
+         * Before doing anything check whether the service is running or not
+         */
+        if(isServiceRunning(DataRecorderService.class)){
+            isRecordDataEnabled = true;
+            recordSwitch.setChecked(true);
+        }
+
+        /**
+         * Record Data Switch Listener
+         */
+        recordSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                isRecordDataEnabled = isChecked;
+                //Start the background Service
+                if(isChecked)
+                    startService(new Intent(getBaseContext(),DataRecorderService.class));
+                else
+                    stopService(new Intent(getBaseContext(),DataRecorderService.class));
+            }
+        });
+
+
         /**
          * Display Data Switch listeners
          */
         displaySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                /**
-                 * Show/Hide Accordingly
-                 */
                 if(isChecked){
                     sensorDataCard.setVisibility(CardView.VISIBLE);
                     gpsDataCard.setVisibility(CardView.VISIBLE);
@@ -149,39 +107,11 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
                 isDisplayDataEnabled = isChecked;
             }
         });
-        /**
-         * Record Data Switch Listener
-         */
-        recordSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                /**
-                 * update variable accordingly
-                 */
-                isRecordDataEnabled = isChecked;
-                //Start the background Service
-                if(isChecked){
-                    startService(new Intent(getBaseContext(),DataRecorderService.class));
-                }
-                else{
-                    stopService(new Intent(getBaseContext(),DataRecorderService.class));
-                }
-            }
-        });
     }
 
     @Override
     public void onStart(){
         super.onStart();
-        /**
-         * Create Directory if not present
-         */
-        directory.mkdirs();
-        try {
-            dataOutput = new FileOutputStream(dataFile,true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -203,9 +133,6 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             Toast.makeText(this, "Setting will come in next Version",Toast.LENGTH_SHORT).show();
             return true;
         }
-        /**
-         * About Section
-         */
         if(id == R.id.action_about){
             startActivity(new Intent(this, About.class));
             return true;
@@ -215,69 +142,13 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
     }
 
     /**
-     * What happens when sensorEvent triggered
-     * @param event
-     */
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        /**
-         * Check first if recording is enabled
-         * If yes, check whether the displaying is also enabled or not
-         */
-        if(isRecordDataEnabled){
-            long currTime = System.currentTimeMillis();
-            if (currTime - lastSensorUpdate > minUpdateDelay) {
-                List<String> sensorData = new ArrayList<>();
-
-                String accelData = String.format("%.3f", event.values[0]) + "," + String.format("%.3f", event.values[1]) + "," + String.format("%.3f", event.values[2]);
-                sensorData.add(accelData);
-                sensorData.add(gyroScope.getLastReadingString());
-                sensorData.add(magnetometer.getLastReadingString());
-                sensorData.add(lightSensor.getLastReadingString());
-
-                // write this data to file
-                writeToFile(sensorData, gpsSensor.getLastLocation());
-                if(isDisplayDataEnabled){
-                    updateUI(sensorData);
-                    updateGPSCard(gpsSensor.getLastLocation());
-                }
-                lastSensorUpdate = currTime;
-            }
-        }
-        /**
-         * If recording is not enabled but displaying is enabled
-         */
-        else if(isDisplayDataEnabled) {
-            long currTime = System.currentTimeMillis();
-            if (currTime - lastSensorUpdate > minUpdateDelay) {
-                List<String> sensorData = new ArrayList<>();
-
-                String accelData = String.format("%.3f", event.values[0]) + "," + String.format("%.3f", event.values[1]) + "," + String.format("%.3f", event.values[2]);
-                sensorData.add(accelData);
-                sensorData.add(gyroScope.getLastReadingString());
-                sensorData.add(magnetometer.getLastReadingString());
-                sensorData.add(lightSensor.getLastReadingString());
-                updateUI(sensorData);
-                updateGPSCard(gpsSensor.getLastLocation());
-                lastSensorUpdate = currTime;
-            }
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        //TODO
-    }
-
-
-    /**
      * update the sensor data onto the sensorDataCard
      * List Format:
      *           Accel, Gyro, Magneto, Light
      * All data should be in String format
      * @param data
      */
-    public void updateUI(List<String> data) {
+    public void updateSensorCard(List<String> data) {
         TextView accelData = (TextView) findViewById(R.id.accelData);
         TextView gyroData = (TextView) findViewById(R.id.gyroData);
         TextView magnetoData = (TextView) findViewById(R.id.magnetoData);
@@ -319,23 +190,11 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         }
     }
 
-    public void writeToFile(List<String> sensorData, Location location){
-        String allData = "";
-        for(int i=0;i<sensorData.size();i++){
-            allData = allData + sensorData.get(i)+";";
+    public boolean isServiceRunning(Class<?> serviceClass){
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for(ActivityManager.RunningServiceInfo runningService : activityManager.getRunningServices(Integer.MAX_VALUE)){
+            if(serviceClass.getName().equals(runningService.service.getClassName()))return true;
         }
-        String locationData="";
-        if(location!=null) {
-            locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed());
-        }
-        else{
-            locationData="-,-,-,-,-";
-        }
-        allData = timeStampFormat.format(new Date()) + ";" + allData + locationData + "\n";
-        try {
-            dataOutput.write(allData.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return false;
     }
 }
