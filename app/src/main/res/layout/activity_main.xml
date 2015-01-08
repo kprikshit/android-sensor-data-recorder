@@ -9,20 +9,94 @@
         android:id="@+id/app_bar"
         layout="@layout/app_bar" />
 
-    <TextView
-        android:id="@+id/txtvw1"
+    <android.support.v7.widget.CardView
+        android:id="@+id/accelCard"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_below="@+id/app_bar"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/accelName"
+                android:text="Accelerometer Data:"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="21dp"
+                android:layout_marginLeft="10dp"
+                android:textColor="@color/accentColor"
+                />
+            <TextView
+                android:id="@+id/accelData"
+                android:layout_below="@+id/accelName"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="20dp"
+                android:text="X-axis :\nY-axis :\nZ-axis :"
+                android:textSize="21dp"
+                android:textColor="@color/primaryColor">
+            </TextView>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_below="@+id/accelCard"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/view">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/gyroName"
+                android:text="GyroScope Data:"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="21dp"
+                android:layout_marginLeft="10dp"
+                android:textColor="@color/accentColor"
+                />
+            <TextView
+                android:id="@+id/gyroData"
+                android:layout_below="@+id/gyroName"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="20dp"
+                android:text="X-axis :\nY-axis :\nZ-axis :"
+                android:textSize="21dp"
+                android:textColor="@color/primaryColor">
+            </TextView>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <NumberPicker
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world"
-        android:layout_alignTop="@+id/imageView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:id="@+id/numberPicker"
+        android:layout_below="@+id/view"
+        android:layout_alignLeft="@+id/view"
+        android:layout_alignStart="@+id/view" />
 
-    <ImageView
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_below="@+id/app_bar"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:id="@+id/imageView" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Sensor Update Frequency"
+        android:id="@+id/textView"
+        android:layout_alignBottom="@+id/numberPicker"
+        android:layout_alignRight="@+id/view"
+        android:layout_alignEnd="@+id/view"
+        android:layout_alignTop="@+id/numberPicker" />
+
+
 </RelativeLayout>
