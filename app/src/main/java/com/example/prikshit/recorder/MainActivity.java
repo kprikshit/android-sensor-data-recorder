@@ -1,8 +1,10 @@
 package com.example.prikshit.recorder;
 
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -34,11 +36,12 @@ import java.util.List;
  * The Main Activity of App
  * Uses Sensor Information
  */
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity{
 
     private Toolbar toolbar;
     private boolean isDisplayDataEnabled = false;
     private boolean isRecordDataEnabled =  false;
+    private BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +118,35 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
+    public void onResume(){
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter("android.intent.action.MAIN");
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(isDisplayDataEnabled) {
+                    // get the sensor data
+                    ArrayList<String> sensorData = intent.getStringArrayListExtra("sensorData");
+                    // get the GPS data in format of string
+                    String locationData = intent.getStringExtra("locationData");
+                    /**
+                     * Update the GUI
+                     */
+                    updateSensorCard(sensorData);
+                    updateGPSCard(locationData);
+                }
+            }
+        };
+        this.registerReceiver(receiver, intentFilter);
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        this.unregisterReceiver(this.receiver);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -170,10 +202,13 @@ public class MainActivity extends ActionBarActivity {
 
     /**
      *  Updates the GPS information on GPS CardView
-     * @param location
+     *  Format:
+     *      latitude, longitude, accuracy, altitude, speed, time
+     * @param locationData
      */
-    public void updateGPSCard(Location location){
-        if(location!=null) {
+    public void updateGPSCard(String locationData){
+        if(!locationData.isEmpty()) {
+            String array[] = locationData.split(",");
             TextView latitude = (TextView) findViewById(R.id.latitudeData);
             TextView longitude = (TextView) findViewById(R.id.longitudeData);
             TextView accuracy = (TextView) findViewById(R.id.accuracyData);
@@ -181,12 +216,12 @@ public class MainActivity extends ActionBarActivity {
             TextView speed = (TextView) findViewById(R.id.speedData);
             TextView time = (TextView) findViewById(R.id.timeData);
 
-            latitude.setText(Double.toString(location.getLatitude()));
-            longitude.setText(Double.toString(location.getLongitude()));
-            accuracy.setText(Double.toString(location.getAccuracy()) + " m");
-            altitude.setText(Double.toString(location.getAltitude()) + " m");
-            speed.setText(Float.toString(location.getSpeed()) + " m/s");
-            time.setText(Long.toString(location.getTime()));
+            latitude.setText(array[0]);
+            longitude.setText(array[1]);
+            accuracy.setText(array[2] + " m");
+            altitude.setText(array[3] + " m");
+            speed.setText(array[4] + " m/s");
+            time.setText(array[5]);
         }
     }
 
@@ -197,4 +232,5 @@ public class MainActivity extends ActionBarActivity {
         }
         return false;
     }
+
 }

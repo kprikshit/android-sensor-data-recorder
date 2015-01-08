@@ -88,7 +88,6 @@ public class DataRecorderService extends Service implements SensorEventListener{
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        //Toast.makeText(this,"Started",Toast.LENGTH_SHORT).show();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -131,8 +130,16 @@ public class DataRecorderService extends Service implements SensorEventListener{
             sensorData.add(lightSensor.getLastReadingString());
 
             // write this data to file
-            writeToFile(sensorData, gpsSensor.getLastLocation());
+            Location location = gpsSensor.getLastLocation();
+            writeToFile(sensorData, location);
             lastReadingUpdateTime = currTime;
+            /**
+             * Sending this information back to activity for displaying on view
+             */
+            String locationData = locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed()) + "," + Long.toString(location.getTime());
+            Intent intent = new Intent("android.intent.action.MAIN").putExtra("locationData",locationData);
+            intent.putExtra("sensorData", (java.io.Serializable) sensorData);
+            this.sendBroadcast(intent);
         }
     }
 
@@ -149,7 +156,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
     public void writeToFile(List<String> sensorData, Location location){
         String allData = "";
         for(int i=0;i<sensorData.size();i++){
-            allData = allData + sensorData.get(i)+";";
+            allData = allData + sensorData.get(i)+",";
         }
         String locationData="";
         if(location!=null) {
@@ -158,7 +165,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
         else{
             locationData="-,-,-,-,-";
         }
-        allData = timeStampFormat.format(new Date()) + ";" + allData + locationData + "\n";
+        allData = timeStampFormat.format(new Date()) + "," + allData + locationData + "\n";
         try {
             dataOutputStream.write(allData.getBytes());
         } catch (IOException e) {

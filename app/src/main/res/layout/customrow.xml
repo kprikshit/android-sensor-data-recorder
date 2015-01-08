@@ -94,7 +94,7 @@
     <TextView
         android:id="@+id/devemail"
         android:text="kprikshit22@gmail.com"
-        android:layout_below = "@+id/nameDev1"
+        android:layout_below = "@+id/devname"
         android:layout_width = "220dp"
         android:layout_height = "wrap_content"
         android:layout_marginLeft="8dp"
