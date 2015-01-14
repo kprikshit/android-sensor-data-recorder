@@ -1,6 +1,5 @@
 package com.example.prikshit.recorder;
 
-import android.app.IntentService;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +10,6 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Environment;
 import android.os.IBinder;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,7 +45,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
     private SensorManager sensorManager;
 
     private long lastReadingUpdateTime;
-    private long minUpdateDelay = 2;
+    private long minUpdateDelay = 0;
 
     /**
      * Format of TimeStamp to be used in front of each reading
@@ -80,7 +77,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
     }
 
     /**
-     * On start, intialize the current sensorEvent Listener with accelerometer as sensor
+     * On start, initialize the current sensorEvent Listener with accelerometer as sensor
      * @param intent
      * @param flags
      * @param startId
@@ -122,23 +119,32 @@ public class DataRecorderService extends Service implements SensorEventListener{
          */
         long currTime = System.currentTimeMillis();
         if (currTime - lastReadingUpdateTime > minUpdateDelay) {
-            List<String> sensorData = new ArrayList<>();
-            String accelData = String.format("%.3f", event.values[0]) + "," + String.format("%.3f", event.values[1]) + "," + String.format("%.3f", event.values[2]);
-            sensorData.add(accelData);
-            sensorData.add(gyroScope.getLastReadingString());
-            sensorData.add(magnetometer.getLastReadingString());
-            sensorData.add(lightSensor.getLastReadingString());
+            //Taking only 3 point precision for accel values
+            String allSensorData = String.format("%.3f", event.values[0]) + "," + String.format("%.3f", event.values[1]) + "," + String.format("%.3f", event.values[2]);
+            allSensorData = allSensorData + "," + gyroScope.getLastReadingString();
+            allSensorData = allSensorData + "," + magnetometer.getLastReadingString();
+            allSensorData = allSensorData + "," + lightSensor.getLastReadingString();
 
-            // write this data to file
             Location location = gpsSensor.getLastLocation();
-            writeToFile(sensorData, location);
+            /**
+             * new data is now added to GPS information
+             * this new data is UNIX timestamp as given by the GPS
+             * New GPS Data:
+             *      latitude, longitude, accuracy, altitude, speed, time
+             */
+            String locationData = "";
+            if(location==null) locationData = "-,-,-,-,-,-";
+            else {
+                locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed()) + "," + Long.toString(location.getTime());
+            }
+            // write this data to file
+            writeToFile(allSensorData, locationData);
             lastReadingUpdateTime = currTime;
             /**
              * Sending this information back to activity for displaying on view
              */
-            String locationData = locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed()) + "," + Long.toString(location.getTime());
-            Intent intent = new Intent("android.intent.action.MAIN").putExtra("locationData",locationData);
-            intent.putExtra("sensorData", (java.io.Serializable) sensorData);
+            Intent intent = new Intent("android.intent.action.MAIN").putExtra("locationData", locationData);
+            intent.putExtra("sensorData", (java.io.Serializable) allSensorData);
             this.sendBroadcast(intent);
         }
     }
@@ -150,22 +156,11 @@ public class DataRecorderService extends Service implements SensorEventListener{
 
     /***
      * Writing data to file.
-     * @param sensorData
-     * @param location
+     * @param allSensorData
+     * @param locationData
      */
-    public void writeToFile(List<String> sensorData, Location location){
-        String allData = "";
-        for(int i=0;i<sensorData.size();i++){
-            allData = allData + sensorData.get(i)+",";
-        }
-        String locationData="";
-        if(location!=null) {
-            locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed());
-        }
-        else{
-            locationData="-,-,-,-,-";
-        }
-        allData = timeStampFormat.format(new Date()) + "," + allData + locationData + "\n";
+    public void writeToFile(String allSensorData, String locationData){
+        String allData = timeStampFormat.format(new Date()) +","+ allSensorData +","+ locationData +"\n";
         try {
             dataOutputStream.write(allData.getBytes());
         } catch (IOException e) {

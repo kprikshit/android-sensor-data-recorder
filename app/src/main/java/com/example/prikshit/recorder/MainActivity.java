@@ -5,12 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.location.Location;
-import android.os.Environment;
+import android.location.LocationManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -21,16 +16,6 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /***
  * The Main Activity of App
@@ -63,7 +48,7 @@ public class MainActivity extends ActionBarActivity{
         /**
          * Switches and their Listeners
          */
-        Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
+        final Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
         Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
 
         /**
@@ -74,16 +59,32 @@ public class MainActivity extends ActionBarActivity{
             recordSwitch.setChecked(true);
         }
 
+        //check whether the GPS is turned on or not here only,instead of checking in the service.
+        // after checking, start/stop service accordingly.
+        final LocationManager locationManager;
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        final Context currentContext = this;
         /**
          * Record Data Switch Listener
          */
         recordSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 isRecordDataEnabled = isChecked;
                 //Start the background Service
-                if(isChecked)
-                    startService(new Intent(getBaseContext(),DataRecorderService.class));
+                if(isChecked) {
+                    /**
+                     * if GPS is enabled, only then start the service,
+                     * otherwise not
+                     */
+                    if(isGPSEnabled) startService(new Intent(getBaseContext(), DataRecorderService.class));
+                    else{
+                        Toast.makeText(currentContext,"Please Enable GPS first before doing so",Toast.LENGTH_SHORT).show();
+                        recordSwitch.setChecked(false);
+                        isRecordDataEnabled = false;
+                    }
+                }
                 else
                     stopService(new Intent(getBaseContext(),DataRecorderService.class));
             }
@@ -126,7 +127,7 @@ public class MainActivity extends ActionBarActivity{
             public void onReceive(Context context, Intent intent) {
                 if(isDisplayDataEnabled) {
                     // get the sensor data
-                    ArrayList<String> sensorData = intent.getStringArrayListExtra("sensorData");
+                    String sensorData = intent.getStringExtra("sensorData");
                     // get the GPS data in format of string
                     String locationData = intent.getStringExtra("locationData");
                     /**
@@ -178,26 +179,30 @@ public class MainActivity extends ActionBarActivity{
      * List Format:
      *           Accel, Gyro, Magneto, Light
      * All data should be in String format
-     * @param data
+     * @param sensorData
      */
-    public void updateSensorCard(List<String> data) {
+    public void updateSensorCard(String sensorData) {
         TextView accelData = (TextView) findViewById(R.id.accelData);
         TextView gyroData = (TextView) findViewById(R.id.gyroData);
         TextView magnetoData = (TextView) findViewById(R.id.magnetoData);
         TextView lightData = (TextView) findViewById(R.id.lightData);
+        String[] array = sensorData.split(",");
 
+        accelData.setText(array[0]+","+array[1]+","+array[2]+" m/s2");
+        gyroData.setText(array[3]+","+array[4]+","+array[5]+" rad/s");
+        magnetoData.setText(array[6]+","+array[7]+","+array[8]+" μT");
+        lightData.setText(array[9] +" μT");
 
-        if (!data.get(0).isEmpty()) accelData.setText(data.get(0)+" m/s2");
-        else accelData.setText("-,-,-");
-
-        if (!data.get(1).isEmpty()) gyroData.setText(data.get(1)+" rad/s");
+        /*
+        if (!sensorData.get(1).isEmpty()) gyroData.setText(sensorData.get(1)+" rad/s");
         else gyroData.setText("-,-,-");
 
-        if (!data.get(2).isEmpty()) magnetoData.setText(data.get(2)+" μT");
+        if (!sensorData.get(2).isEmpty()) magnetoData.setText(sensorData.get(2)+" μT");
         else magnetoData.setText("-,-,-");
 
-        if (!data.get(3).isEmpty()) lightData.setText(data.get(3)+" lux");
-        else lightData.setText("-,-,-");
+        if (!sensorData.get(3).isEmpty()) lightData.setText(sensorData.get(3)+" lux");
+        else lightData.setText("-");
+        */
     }
 
     /**

@@ -29,6 +29,10 @@ public class CustomGPS implements
      */
     private String locationProvider = LocationManager.GPS_PROVIDER;
 
+    /**
+     * The default constructor for this class
+     * @param context
+     */
     public CustomGPS(Context context){
         // registering the locationManager
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
@@ -36,7 +40,6 @@ public class CustomGPS implements
         locationManager.requestLocationUpdates(locationProvider,0,0,this);
         lastLocation = locationManager.getLastKnownLocation(locationProvider);
     }
-
     /**
      * What happens when location is changed
      * update the variable lastLocation
