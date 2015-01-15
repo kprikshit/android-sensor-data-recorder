@@ -10,8 +10,12 @@ import android.widget.TextView;
 import java.util.List;
 
 /**
- * Adapter for the Recycler View
- * Created by Prikshit on 08-01-2015.
+ * Prikshit Kumar
+ * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * CSE, IIT Ropar
+ * Created on: 08-01-2015
+ *
+ * Adapter for Recycler View
  */
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
@@ -22,7 +26,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     @Override
-    public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,int viewType) {
+    public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.customrow, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
         return viewHolder;
@@ -51,6 +55,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         public TextView devName;
         public TextView devEmail;
         public ImageView devImage;
+
         public ViewHolder(View v) {
             super(v);
             devName = (TextView) v.findViewById(R.id.devname);

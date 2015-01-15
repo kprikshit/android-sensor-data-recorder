@@ -20,36 +20,37 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="4dp">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <Switch
-                android:layout_marginTop="4dp"
+                android:id="@+id/recordingSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Record Data"
-                android:id="@+id/recordingSwitch"
-                android:checked="false"
-                android:textColor="@color/inAppTextColor"
+                android:layout_alignEnd="@+id/displaySwitch"
                 android:layout_alignParentTop="true"
                 android:layout_alignRight="@+id/displaySwitch"
-                android:layout_alignEnd="@+id/displaySwitch" />
+                android:layout_marginTop="4dp"
+                android:checked="false"
+                android:text="Record Data"
+                android:textColor="@color/inAppTextColor" />
 
             <Switch
-                android:layout_marginTop="4dp"
-                android:layout_below="@+id/recordingSwitch"
+                android:id="@+id/displaySwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Display Data"
-                android:id="@+id/displaySwitch"
-                android:checked="false"
-                android:textColor="@color/inAppTextColor"
-                android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
+                android:layout_below="@+id/recordingSwitch"
+                android:layout_centerVertical="true"
                 android:layout_marginLeft="23dp"
-                android:layout_marginStart="23dp" />
+                android:layout_marginStart="23dp"
+                android:layout_marginTop="4dp"
+                android:checked="false"
+                android:text="Display Data"
+                android:textColor="@color/inAppTextColor" />
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 
@@ -63,7 +64,7 @@
         android:layout_below="@+id/toggleCard"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="4dp" >
+        android:layout_marginTop="4dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -80,6 +81,7 @@
                 android:layout_marginTop="10dp"
                 android:text="Accel : "
                 android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/accelData"
                 android:layout_width="wrap_content"
@@ -98,8 +100,9 @@
                 android:layout_alignLeft="@+id/accelName"
                 android:layout_alignStart="@+id/accelName"
                 android:layout_below="@+id/accelData"
-                android:textColor="@color/inAppTextColor"
-                android:text="Gyro : " />
+                android:text="Gyro : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/gyroData"
                 android:layout_width="wrap_content"
@@ -108,7 +111,7 @@
                 android:layout_alignStart="@+id/magnetoData"
                 android:layout_below="@+id/accelName"
                 android:text="0,0,0"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
             <!--Magnetometer-->
             <TextView
@@ -118,8 +121,9 @@
                 android:layout_alignLeft="@+id/gyroName"
                 android:layout_alignStart="@+id/gyroName"
                 android:layout_below="@+id/gyroName"
-                android:textColor="@color/inAppTextColor"
-                android:text="Magneto : " />
+                android:text="Magneto : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/magnetoData"
                 android:layout_width="wrap_content"
@@ -130,7 +134,7 @@
                 android:layout_marginLeft="101dp"
                 android:layout_marginStart="101dp"
                 android:text="0,0,0"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
             <!---Light-->
             <TextView
@@ -140,8 +144,9 @@
                 android:layout_alignLeft="@+id/magnetoName"
                 android:layout_alignStart="@+id/magnetoName"
                 android:layout_below="@+id/magnetoName"
-                android:textColor="@color/inAppTextColor"
-                android:text="Light : " />
+                android:text="Light : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/lightData"
                 android:layout_width="wrap_content"
@@ -152,7 +157,7 @@
                 android:layout_marginLeft="101dp"
                 android:layout_marginStart="101dp"
                 android:text="0 luxs"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 
@@ -165,10 +170,12 @@
         android:layout_below="@+id/sensorCard"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="4dp" >
+        android:layout_marginTop="4dp">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <TextView
                 android:id="@+id/latitude"
                 android:layout_width="match_parent"
@@ -180,6 +187,7 @@
                 android:layout_marginTop="10dp"
                 android:text="Latitude : "
                 android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/latitudeData"
                 android:layout_width="wrap_content"
@@ -198,8 +206,9 @@
                 android:layout_alignLeft="@+id/latitude"
                 android:layout_alignStart="@+id/latitude"
                 android:layout_below="@+id/latitudeData"
-                android:textColor="@color/inAppTextColor"
-                android:text="Longitude : " />
+                android:text="Longitude : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/longitudeData"
                 android:layout_width="wrap_content"
@@ -208,7 +217,7 @@
                 android:layout_alignStart="@+id/accuracyData"
                 android:layout_below="@+id/latitude"
                 android:text="0.00"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
             <!--Magnetometer-->
             <TextView
@@ -218,8 +227,9 @@
                 android:layout_alignLeft="@+id/longitude"
                 android:layout_alignStart="@+id/longitude"
                 android:layout_below="@+id/longitude"
-                android:textColor="@color/inAppTextColor"
-                android:text="Accuracy : " />
+                android:text="Accuracy : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/accuracyData"
                 android:layout_width="wrap_content"
@@ -230,7 +240,7 @@
                 android:layout_marginLeft="101dp"
                 android:layout_marginStart="101dp"
                 android:text="0"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
             <!---Light-->
             <TextView
@@ -240,8 +250,9 @@
                 android:layout_alignLeft="@+id/accuracy"
                 android:layout_alignStart="@+id/accuracy"
                 android:layout_below="@+id/accuracy"
-                android:textColor="@color/inAppTextColor"
-                android:text="Altitude : " />
+                android:text="Altitude : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/altitudeData"
                 android:layout_width="wrap_content"
@@ -252,7 +263,7 @@
                 android:layout_marginLeft="101dp"
                 android:layout_marginStart="101dp"
                 android:text="0"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
             <TextView
                 android:id="@+id/speed"
@@ -261,8 +272,9 @@
                 android:layout_alignLeft="@+id/altitude"
                 android:layout_alignStart="@+id/altitude"
                 android:layout_below="@+id/altitude"
-                android:textColor="@color/inAppTextColor"
-                android:text="Speed : " />
+                android:text="Speed : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/speedData"
                 android:layout_width="wrap_content"
@@ -273,7 +285,7 @@
                 android:layout_marginLeft="101dp"
                 android:layout_marginStart="101dp"
                 android:text="0"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
             <TextView
                 android:id="@+id/time"
@@ -282,8 +294,9 @@
                 android:layout_alignLeft="@+id/speed"
                 android:layout_alignStart="@+id/speed"
                 android:layout_below="@+id/speed"
-                android:textColor="@color/inAppTextColor"
-                android:text="Time : " />
+                android:text="Time : "
+                android:textColor="@color/inAppTextColor" />
+
             <TextView
                 android:id="@+id/timeData"
                 android:layout_width="wrap_content"
@@ -294,7 +307,7 @@
                 android:layout_marginLeft="101dp"
                 android:layout_marginStart="101dp"
                 android:text="0"
-                android:textColor="@color/primaryColor"/>
+                android:textColor="@color/primaryColor" />
 
         </RelativeLayout>
     </android.support.v7.widget.CardView>

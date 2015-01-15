@@ -6,18 +6,21 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import static java.lang.Math.round;
-
 
 /**
- * Created by Prikshit on 08-01-2015.
+ * Prikshit Kumar
+ * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * CSE, IIT Ropar
+ * Created on: 08-01-2015
+ *
+ * A java class implemented as a separate listener to magnetometer only.
  */
 public class CustomMagnetometer implements SensorEventListener {
     private Sensor magneto;
     private SensorManager sensorManager;
     private float[] lastReading;
 
-    public CustomMagnetometer(Context context){
+    public CustomMagnetometer(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         lastReading = new float[3];
         magneto = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -26,7 +29,7 @@ public class CustomMagnetometer implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        for(int i=0;i<3;i++){
+        for (int i = 0; i < 3; i++) {
             lastReading[i] = event.values[i];
         }
     }
@@ -36,22 +39,22 @@ public class CustomMagnetometer implements SensorEventListener {
 
     }
 
-    public boolean isMagnetoPresent(){
-        return sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)!=null;
+    public boolean isMagnetoPresent() {
+        return sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null;
     }
 
-    public float[] getLastReading(){
+    public float[] getLastReading() {
         return this.lastReading;
     }
 
-    public String getLastReadingString(){
-        return String.format("%.3f",lastReading[0]) + "," + String.format("%.3f",lastReading[1]) + "," + String.format("%.3f",lastReading[2]);
+    public String getLastReadingString() {
+        return String.format("%.3f", lastReading[0]) + "," + String.format("%.3f", lastReading[1]) + "," + String.format("%.3f", lastReading[2]);
     }
 
     /**
      * Unregistering the sensor listener
      */
-    public void unregisterListener(){
+    public void unregisterListener() {
         sensorManager.unregisterListener(this);
     }
 

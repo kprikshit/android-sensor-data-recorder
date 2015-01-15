@@ -15,23 +15,30 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
- * Created by Prikshit on 08-01-2015.
+ * Prikshit Kumar
+ * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * CSE, IIT Ropar
+ * Created on: 08-01-2015
+ *
+ * The java class is implemented as a service which listens to various listener and
+ * appends the data obtained in a file.
  */
-public class DataRecorderService extends Service implements SensorEventListener{
+public class DataRecorderService extends Service implements SensorEventListener {
 
-    /***
+    /**
      * File Read Write Information
      */
-    String fileName="data1.txt";
-    private File sdDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Data_Recorder");
+    String fileName = "data1.txt";
+    /**
+     * Format of TimeStamp to be used in front of each reading
+     */
+    SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy:MM:dd:hh:mm:ss.SSS");
+    private File sdDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Data_Recorder");
     private File dataFile = new File(sdDirectory, fileName);
     private FileOutputStream dataOutputStream;
-
     /**
      * Custom Defined Primary Sensors
      * Accelerometer is not used because we will be using this sensor in this java file only
@@ -40,24 +47,20 @@ public class DataRecorderService extends Service implements SensorEventListener{
     private CustomLightSensor lightSensor;
     private CustomMagnetometer magnetometer;
     private CustomGPS gpsSensor;
-
     private Sensor accelSensor;
     private SensorManager sensorManager;
 
-    private long lastReadingUpdateTime;
+    // time when last reading was appended/written to file.
+    private long lastWriteTime;
+    // the minimum delay for between appending data to the file.
     private long minUpdateDelay = 0;
-
-    /**
-     * Format of TimeStamp to be used in front of each reading
-     */
-    SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy:MM:dd:hh:mm:ss.SSS");
 
     /**
      * What to do when the service is created
      * Initialize all the sensorListeners
      */
     @Override
-    public void onCreate(){
+    public void onCreate() {
         gyroScope = new CustomGyroScope(this);
         lightSensor = new CustomLightSensor(this);
         magnetometer = new CustomMagnetometer(this);
@@ -65,7 +68,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
 
         sdDirectory.mkdirs();
         try {
-            dataOutputStream = new FileOutputStream(dataFile,true);
+            dataOutputStream = new FileOutputStream(dataFile, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,17 +81,18 @@ public class DataRecorderService extends Service implements SensorEventListener{
 
     /**
      * On start, initialize the current sensorEvent Listener with accelerometer as sensor
+     *
      * @param intent
      * @param flags
      * @param startId
      * @return
      */
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId){
+    public int onStartCommand(Intent intent, int flags, int startId) {
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this,accelSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         return START_STICKY;
     }
@@ -97,7 +101,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
      * Before destroying, de-register all the listeners
      */
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         gyroScope.unregisterListener();
         magnetometer.unregisterListener();
         lightSensor.unregisterListener();
@@ -109,6 +113,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
     /**
      * SensorEvent Listener was triggered,
      * Time to write readings to file
+     *
      * @param event
      */
     @Override
@@ -118,7 +123,7 @@ public class DataRecorderService extends Service implements SensorEventListener{
          * If yes, check whether the displaying is also enabled or not
          */
         long currTime = System.currentTimeMillis();
-        if (currTime - lastReadingUpdateTime > minUpdateDelay) {
+        if (currTime - lastWriteTime > minUpdateDelay) {
             //Taking only 3 point precision for accel values
             String allSensorData = String.format("%.3f", event.values[0]) + "," + String.format("%.3f", event.values[1]) + "," + String.format("%.3f", event.values[2]);
             allSensorData = allSensorData + "," + gyroScope.getLastReadingString();
@@ -133,13 +138,13 @@ public class DataRecorderService extends Service implements SensorEventListener{
              *      latitude, longitude, accuracy, altitude, speed, time
              */
             String locationData = "";
-            if(location==null) locationData = "-,-,-,-,-,-";
+            if (location == null) locationData = "-,-,-,-,-,-";
             else {
                 locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed()) + "," + Long.toString(location.getTime());
             }
             // write this data to file
             writeToFile(allSensorData, locationData);
-            lastReadingUpdateTime = currTime;
+            lastWriteTime = currTime;
             /**
              * Sending this information back to activity for displaying on view
              */
@@ -154,13 +159,14 @@ public class DataRecorderService extends Service implements SensorEventListener{
 
     }
 
-    /***
+    /**
      * Writing data to file.
+     *
      * @param allSensorData
      * @param locationData
      */
-    public void writeToFile(String allSensorData, String locationData){
-        String allData = timeStampFormat.format(new Date()) +","+ allSensorData +","+ locationData +"\n";
+    public void writeToFile(String allSensorData, String locationData) {
+        String allData = timeStampFormat.format(new Date()) + "," + allSensorData + "," + locationData + "\n";
         try {
             dataOutputStream.write(allData.getBytes());
         } catch (IOException e) {

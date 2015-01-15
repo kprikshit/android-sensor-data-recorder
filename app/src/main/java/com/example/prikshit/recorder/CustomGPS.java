@@ -11,12 +11,17 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationRequest;
 
 /**
- * Created by Prikshit on 08-01-2015.
+ * Prikshit Kumar
+ * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * CSE, IIT Ropar
+ * Created on: 08-01-2015
+ *
+ * A java class implemented as a separate listener to GPS only.
  */
-public class CustomGPS implements
+ public class CustomGPS implements
         LocationListener,
         GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener{
+        GooglePlayServicesClient.OnConnectionFailedListener {
 
     private Location lastLocation;
     private LocationListener locationListener;
@@ -31,18 +36,21 @@ public class CustomGPS implements
 
     /**
      * The default constructor for this class
+     *
      * @param context
      */
-    public CustomGPS(Context context){
+    public CustomGPS(Context context) {
         // registering the locationManager
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         // requesting location updates
-        locationManager.requestLocationUpdates(locationProvider,0,0,this);
+        locationManager.requestLocationUpdates(locationProvider, 0, 0, this);
         lastLocation = locationManager.getLastKnownLocation(locationProvider);
     }
+
     /**
-     * What happens when location is changed
+     * What happens when location is changed:
      * update the variable lastLocation
+     *
      * @param location
      */
     @Override
@@ -83,14 +91,14 @@ public class CustomGPS implements
     /**
      * Returns the last known location
      */
-    public Location getLastLocation(){
+    public Location getLastLocation() {
         return this.lastLocation;
     }
 
     /**
      * removing location requests
      */
-    public void unregisterListener(){
+    public void unregisterListener() {
         locationManager.removeUpdates(this);
     }
 }

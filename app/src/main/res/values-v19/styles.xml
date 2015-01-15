@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="AppTheme" parent="AppTheme.Base">
         <!---
             Trying some experiment with kitkat version only
@@ -7,4 +8,4 @@
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">true</item>
     </style>
-    </resources>
+</resources>

@@ -22,12 +22,9 @@
         <activity
             android:name=".About"
             android:label="@string/title_activity_about"
-            android:parentActivityName=".MainActivity">
-         </activity>
+            android:parentActivityName=".MainActivity"></activity>
 
-        <service
-            android:name=".DataRecorderService" >
-        </service>
+        <service android:name=".DataRecorderService"></service>
     </application>
 
 </manifest>

@@ -1,19 +1,24 @@
 package com.example.prikshit.recorder;
 
+import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Author: Prikshit Kumar
+ * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * CSE, IIT Ropar
+ * Created on: 08-01-2015
+ *
+ * Java file associated with About Activity
+ */
 public class About extends ActionBarActivity {
 
     private RecyclerView recyclerView;
@@ -25,15 +30,21 @@ public class About extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-        //setting the toolbar
-        Toolbar toolbar = (Toolbar)findViewById(R.id.app_bar);
+        /**
+         * <p>setting the custom toolbar</p>
+         */
+        Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
-        //for showing back buttons to go back on previous activity
+        /**
+         * for showing back buttons to go back on previous activity
+         */
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        //setting thr recycler view
+        /**
+         * setting thr recycler view
+         */
         recyclerView = (RecyclerView) findViewById(R.id.recycler1);
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
@@ -43,17 +54,22 @@ public class About extends ActionBarActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    //Data for the recycler view list
-    public List<Information> getData(){
+    /**
+     * <p>
+     *     Developer data which is to be shown in about activity
+     *     using a recyclerView (equivalent to listView in old APIs)
+     *     Right now, the data is hard coded,
+     *     but at later stages, the data should be taken from a separate file
+     * </p>
+     * @return
+     */
+    public List<Information> getData() {
         List<Information> data = new ArrayList<>();
-        int[] pics = {R.drawable.prikshit_pic,R.drawable.prikshit_pic,R.drawable.prikshit_pic};
-        String[] names={"Prikshit","Pankaj","Parmeet"};
-        String[] emails={"kprikshit22","as","ss"};
-        for(int i=0;i<pics.length;i++){
-            Information info = new Information();
-            info.picId=pics[i];
-            info.email=emails[i];
-            info.name=names[i];
+        int[] pics = {R.drawable.prikshit_pic, R.drawable.prikshit_pic, R.drawable.prikshit_pic};
+        String[] names = {"Prikshit Kumar", "Pankaj Kumar", "Parmeet Singh"};
+        String[] emails = {"kprikshit@iitrpr.ac.in", "pankajkmr@iitrpr.ac.in", "sparmeet@iitrpr.ac.in"};
+        for (int i = 0; i < pics.length; i++) {
+            Information info = new Information(names[i],emails[i],pics[i]);
             data.add(info);
         }
         return data;
@@ -77,8 +93,13 @@ public class About extends ActionBarActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-        //what happens if user clicks on back button
-        if(id == R.id.home) {
+        /**
+         * <p>
+         *     when clicked on Back button
+         *     go back to home screen
+         * </p>
+         */
+        if (id == R.id.home) {
             NavUtils.navigateUpFromSameTask(this);
         }
         return super.onOptionsItemSelected(item);

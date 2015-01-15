@@ -6,26 +6,31 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v7.widget.Toolbar;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/***
- * The Main Activity of App
- * Uses Sensor Information
+/**
+ * Prikshit Kumar
+ * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * CSE, IIT Ropar
+ * Created on: 08-01-2015
+ *
+ * the java file associated with the main Activity of the application
+ * i.e. the Home Screen of the application
  */
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends ActionBarActivity {
 
     private Toolbar toolbar;
     private boolean isDisplayDataEnabled = false;
-    private boolean isRecordDataEnabled =  false;
+    private boolean isRecordDataEnabled = false;
     private BroadcastReceiver receiver;
 
     @Override
@@ -40,7 +45,7 @@ public class MainActivity extends ActionBarActivity{
          */
         final CardView sensorDataCard = (CardView) findViewById(R.id.sensorCard);
         final CardView gpsDataCard = (CardView) findViewById(R.id.gpsDataCard);
-        if(!isDisplayDataEnabled){
+        if (!isDisplayDataEnabled) {
             sensorDataCard.setVisibility(CardView.INVISIBLE);
             gpsDataCard.setVisibility(CardView.INVISIBLE);
         }
@@ -54,7 +59,7 @@ public class MainActivity extends ActionBarActivity{
         /**
          * Before doing anything check whether the service is running or not
          */
-        if(isServiceRunning(DataRecorderService.class)){
+        if (isServiceRunning(DataRecorderService.class)) {
             isRecordDataEnabled = true;
             recordSwitch.setChecked(true);
         }
@@ -67,26 +72,26 @@ public class MainActivity extends ActionBarActivity{
         /**
          * Record Data Switch Listener
          */
-        recordSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+        recordSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
                 isRecordDataEnabled = isChecked;
                 //Start the background Service
-                if(isChecked) {
+                if (isChecked) {
                     /**
                      * if GPS is enabled, only then start the service,
                      * otherwise not
                      */
-                    if(isGPSEnabled) startService(new Intent(getBaseContext(), DataRecorderService.class));
-                    else{
-                        Toast.makeText(currentContext,"Please Enable GPS first before doing so",Toast.LENGTH_SHORT).show();
+                    if (isGPSEnabled)
+                        startService(new Intent(getBaseContext(), DataRecorderService.class));
+                    else {
+                        Toast.makeText(currentContext, "Please Enable GPS first before doing so", Toast.LENGTH_SHORT).show();
                         recordSwitch.setChecked(false);
                         isRecordDataEnabled = false;
                     }
-                }
-                else
-                    stopService(new Intent(getBaseContext(),DataRecorderService.class));
+                } else
+                    stopService(new Intent(getBaseContext(), DataRecorderService.class));
             }
         });
 
@@ -97,11 +102,10 @@ public class MainActivity extends ActionBarActivity{
         displaySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     sensorDataCard.setVisibility(CardView.VISIBLE);
                     gpsDataCard.setVisibility(CardView.VISIBLE);
-                }
-                else{
+                } else {
                     sensorDataCard.setVisibility(CardView.INVISIBLE);
                     gpsDataCard.setVisibility(CardView.INVISIBLE);
                 }
@@ -114,18 +118,18 @@ public class MainActivity extends ActionBarActivity{
     }
 
     @Override
-    public void onStart(){
+    public void onStart() {
         super.onStart();
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         IntentFilter intentFilter = new IntentFilter("android.intent.action.MAIN");
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(isDisplayDataEnabled) {
+                if (isDisplayDataEnabled) {
                     // get the sensor data
                     String sensorData = intent.getStringExtra("sensorData");
                     // get the GPS data in format of string
@@ -142,7 +146,7 @@ public class MainActivity extends ActionBarActivity{
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         this.unregisterReceiver(this.receiver);
     }
@@ -163,10 +167,10 @@ public class MainActivity extends ActionBarActivity{
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Toast.makeText(this, "Setting will come in next Version",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Setting will come in next Version", Toast.LENGTH_SHORT).show();
             return true;
         }
-        if(id == R.id.action_about){
+        if (id == R.id.action_about) {
             startActivity(new Intent(this, About.class));
             return true;
         }
@@ -177,8 +181,9 @@ public class MainActivity extends ActionBarActivity{
     /**
      * update the sensor data onto the sensorDataCard
      * List Format:
-     *           Accel, Gyro, Magneto, Light
+     * Accel, Gyro, Magneto, Light
      * All data should be in String format
+     *
      * @param sensorData
      */
     public void updateSensorCard(String sensorData) {
@@ -188,10 +193,10 @@ public class MainActivity extends ActionBarActivity{
         TextView lightData = (TextView) findViewById(R.id.lightData);
         String[] array = sensorData.split(",");
 
-        accelData.setText(array[0]+","+array[1]+","+array[2]+" m/s2");
-        gyroData.setText(array[3]+","+array[4]+","+array[5]+" rad/s");
-        magnetoData.setText(array[6]+","+array[7]+","+array[8]+" μT");
-        lightData.setText(array[9] +" μT");
+        accelData.setText(array[0] + "," + array[1] + "," + array[2] + " m/s2");
+        gyroData.setText(array[3] + "," + array[4] + "," + array[5] + " rad/s");
+        magnetoData.setText(array[6] + "," + array[7] + "," + array[8] + " μT");
+        lightData.setText(array[9] + " μT");
 
         /*
         if (!sensorData.get(1).isEmpty()) gyroData.setText(sensorData.get(1)+" rad/s");
@@ -206,13 +211,14 @@ public class MainActivity extends ActionBarActivity{
     }
 
     /**
-     *  Updates the GPS information on GPS CardView
-     *  Format:
-     *      latitude, longitude, accuracy, altitude, speed, time
+     * Updates the GPS information on GPS CardView
+     * Format:
+     * latitude, longitude, accuracy, altitude, speed, time
+     *
      * @param locationData
      */
-    public void updateGPSCard(String locationData){
-        if(!locationData.isEmpty()) {
+    public void updateGPSCard(String locationData) {
+        if (!locationData.isEmpty()) {
             String array[] = locationData.split(",");
             TextView latitude = (TextView) findViewById(R.id.latitudeData);
             TextView longitude = (TextView) findViewById(R.id.longitudeData);
@@ -230,10 +236,10 @@ public class MainActivity extends ActionBarActivity{
         }
     }
 
-    public boolean isServiceRunning(Class<?> serviceClass){
+    public boolean isServiceRunning(Class<?> serviceClass) {
         ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for(ActivityManager.RunningServiceInfo runningService : activityManager.getRunningServices(Integer.MAX_VALUE)){
-            if(serviceClass.getName().equals(runningService.service.getClassName()))return true;
+        for (ActivityManager.RunningServiceInfo runningService : activityManager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(runningService.service.getClassName())) return true;
         }
         return false;
     }
