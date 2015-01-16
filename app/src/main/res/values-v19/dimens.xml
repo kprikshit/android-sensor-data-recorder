@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--The distance of toolbar from the top (for kitkat, it shouldn't be zero, we are using both space2)-->
+    <dimen name="appbar_toppadding">24dp</dimen>
+</resources>
