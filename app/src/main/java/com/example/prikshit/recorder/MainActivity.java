@@ -1,12 +1,15 @@
 package com.example.prikshit.recorder;
 
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +19,8 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.LocationSource;
 
 /**
  * Prikshit Kumar
@@ -68,7 +73,6 @@ public class MainActivity extends ActionBarActivity {
         // after checking, start/stop service accordingly.
         final LocationManager locationManager;
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        final Context currentContext = this;
         /**
          * Record Data Switch Listener
          */
@@ -86,7 +90,9 @@ public class MainActivity extends ActionBarActivity {
                     if (isGPSEnabled)
                         startService(new Intent(getBaseContext(), DataRecorderService.class));
                     else {
-                        Toast.makeText(currentContext, "Please Enable GPS first before doing so", Toast.LENGTH_SHORT).show();
+                        //show GPS settings
+                        showGPSSettingsAlert();
+                        // set the switched to off state
                         recordSwitch.setChecked(false);
                         isRecordDataEnabled = false;
                     }
@@ -196,7 +202,7 @@ public class MainActivity extends ActionBarActivity {
         accelData.setText(array[0] + "," + array[1] + "," + array[2] + " m/s2");
         gyroData.setText(array[3] + "," + array[4] + "," + array[5] + " rad/s");
         magnetoData.setText(array[6] + "," + array[7] + "," + array[8] + " μT");
-        lightData.setText(array[9] + " μT");
+        lightData.setText(array[9] + " lux");
 
         /*
         if (!sensorData.get(1).isEmpty()) gyroData.setText(sensorData.get(1)+" rad/s");
@@ -236,12 +242,50 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    /**
+     * Checks whether the service associated with the app is running or not.
+     * @param serviceClass
+     * @return
+     */
     public boolean isServiceRunning(Class<?> serviceClass) {
         ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo runningService : activityManager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(runningService.service.getClassName())) return true;
         }
         return false;
+    }
+
+    /**
+     * the GPS is disabled alert dialog box
+     * also, allows to go to settings to change the location settings
+     */
+    public void showGPSSettingsAlert(){
+        AlertDialog.Builder alertDialog =  new AlertDialog.Builder(this);
+        alertDialog.setTitle("Change Location Settings?");
+        alertDialog.setMessage("Location has been disabled. Do you want to go to settings to switch it on?");
+        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+            /**
+             * What happens when user clicks on settings.
+             * @param dialog
+             * @param which
+             */
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Show the location settings to user when settings is pressed
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getApplicationContext().startActivity(intent);
+            }
+        });
+
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            //when click button is pressed
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alertDialog.show();
     }
 
 }

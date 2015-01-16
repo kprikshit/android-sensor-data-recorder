@@ -5,6 +5,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -17,6 +19,7 @@ import com.google.android.gms.location.LocationRequest;
  * Created on: 08-01-2015
  *
  * A java class implemented as a separate listener to GPS only.
+ * Now adding network provider also instead of just GPS provider.
  */
  public class CustomGPS implements
         LocationListener,
@@ -24,15 +27,17 @@ import com.google.android.gms.location.LocationRequest;
         GooglePlayServicesClient.OnConnectionFailedListener {
 
     private Location lastLocation;
-    private LocationListener locationListener;
     private LocationManager locationManager;
-    private LocationRequest locationRequest;
+    private Context appContext;
+    private boolean isGPSEnabled;
+    private boolean isNetworkEnabled;
 
     /**
      * Location provider
      * either GPS or NETWORK_PROVIDER
      */
-    private String locationProvider = LocationManager.GPS_PROVIDER;
+    private String gpsLocationProvider = LocationManager.GPS_PROVIDER;
+    private String networkLocationProvider = LocationManager.NETWORK_PROVIDER;
 
     /**
      * The default constructor for this class
@@ -40,11 +45,26 @@ import com.google.android.gms.location.LocationRequest;
      * @param context
      */
     public CustomGPS(Context context) {
+        appContext = context;
         // registering the locationManager
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        /**
+         * <p>checking which location providers are enabled and which are not</p>
+         */
+        isGPSEnabled = locationManager.isProviderEnabled(gpsLocationProvider);
+        isNetworkEnabled = locationManager.isProviderEnabled(networkLocationProvider);
+
         // requesting location updates
-        locationManager.requestLocationUpdates(locationProvider, 0, 0, this);
-        lastLocation = locationManager.getLastKnownLocation(locationProvider);
+        locationManager.requestLocationUpdates(gpsLocationProvider, 0, 0, this);
+        lastLocation = locationManager.getLastKnownLocation(gpsLocationProvider);
+        //if gps has not given any location, then try the network location
+        if(lastLocation == null){
+            // first, check whether the network is enabled or not.
+            Log.d("using the network provider now","using network");
+            if(isNetworkEnabled){
+                lastLocation = locationManager.getLastKnownLocation(networkLocationProvider);
+            }
+        }
     }
 
     /**
@@ -60,22 +80,18 @@ import com.google.android.gms.location.LocationRequest;
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-
     }
 
     @Override
     public void onConnected(Bundle bundle) {
-
     }
 
     @Override
@@ -85,7 +101,6 @@ import com.google.android.gms.location.LocationRequest;
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
     }
 
     /**
@@ -99,6 +114,7 @@ import com.google.android.gms.location.LocationRequest;
      * removing location requests
      */
     public void unregisterListener() {
-        locationManager.removeUpdates(this);
+        if(locationManager != null)
+            locationManager.removeUpdates(this);
     }
 }
