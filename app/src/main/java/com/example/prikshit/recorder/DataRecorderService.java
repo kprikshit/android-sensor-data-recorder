@@ -1,5 +1,6 @@
 package com.example.prikshit.recorder;
 
+import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -8,20 +9,23 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.telephony.CellInfo;
+import android.telephony.CellLocation;
+import android.telephony.NeighboringCellInfo;
+import android.telephony.TelephonyManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
- * Prikshit Kumar
- * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
- * CSE, IIT Ropar
- * Created on: 08-01-2015
+ *
  *
  * The java class is implemented as a service which listens to various listener and
  * appends the data obtained in a file.
@@ -31,7 +35,12 @@ public class DataRecorderService extends Service implements SensorEventListener 
     /**
      * File Read Write Information
      */
-    String fileName = "data1.txt";
+    String fileName = "sensorData.csv";
+    /**
+     * file information for storing lag between files
+     */
+    // WRITE LAG DISABLED
+    // String lagFileName = "fileWriteLag.csv";
     /**
      * Format of TimeStamp to be used in front of each reading
      */
@@ -39,6 +48,9 @@ public class DataRecorderService extends Service implements SensorEventListener 
     private File sdDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Data_Recorder");
     private File dataFile = new File(sdDirectory, fileName);
     private FileOutputStream dataOutputStream;
+    // WRITE LAG DISABLED the lag file Name
+    // private File logFile = new File(sdDirectory, lagFileName);
+    // private FileOutputStream logOutputStream;
     /**
      * Custom Defined Primary Sensors
      * Accelerometer is not used because we will be using this sensor in this java file only
@@ -49,11 +61,17 @@ public class DataRecorderService extends Service implements SensorEventListener 
     private CustomGPS gpsSensor;
     private Sensor accelSensor;
     private SensorManager sensorManager;
+    private CustomWifi wifiReader;
+    // CELLULAR DISABLED cellular data has also been disabled for this version.
+    // private CustomCellular cellularReader;
 
     // time when last reading was appended/written to file.
     private long lastWriteTime;
     // the minimum delay for between appending data to the file.
     private long minUpdateDelay = 0;
+
+    // for storing all sensors and other data
+    private StringBuilder allData = new StringBuilder();
 
     /**
      * What to do when the service is created
@@ -65,10 +83,15 @@ public class DataRecorderService extends Service implements SensorEventListener 
         lightSensor = new CustomLightSensor(this);
         magnetometer = new CustomMagnetometer(this);
         gpsSensor = new CustomGPS(this);
+        wifiReader = new CustomWifi(this);
+        // CELLULAR DISABLED
+        //cellularReader = new CustomCellular(this);
 
         sdDirectory.mkdirs();
         try {
             dataOutputStream = new FileOutputStream(dataFile, true);
+            // WRITE LAG DISABLED: lag information has been disabled currently.
+            //logOutputStream = new FileOutputStream(logFile,true);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -118,39 +141,60 @@ public class DataRecorderService extends Service implements SensorEventListener 
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        /**
-         * Check first if recording is enabled
-         * If yes, check whether the displaying is also enabled or not
-         */
         long currTime = System.currentTimeMillis();
         if (currTime - lastWriteTime > minUpdateDelay) {
-            //Taking only 3 point precision for accel values
-            String allSensorData = String.format("%.3f", event.values[0]) + "," + String.format("%.3f", event.values[1]) + "," + String.format("%.3f", event.values[2]);
-            allSensorData = allSensorData + "," + gyroScope.getLastReadingString();
-            allSensorData = allSensorData + "," + magnetometer.getLastReadingString();
-            allSensorData = allSensorData + "," + lightSensor.getLastReadingString();
+            allData.append(timeStampFormat.format(new Date()));
+            allData.append(",");
+            // now appending accelerometer data
+            allData.append(String.format("%.3f", event.values[0]));
+            allData.append(",");
+            allData.append(String.format("%.3f", event.values[1]));
+            allData.append(",");
+            allData.append(String.format("%.3f", event.values[2]));
+            // now appending data from other sensors
+            allData.append(",");
+            allData.append(gyroScope.getLastReadingString());
+            allData.append(",");
+            allData.append(magnetometer.getLastReadingString());
+            allData.append(",");
+            allData.append(lightSensor.getLastReadingString());
+            // for sending to display on activity screen
+            /**
+             * FUTURE SCOPE:
+             * Calling broadcast this many time may cause some undesirable effect (slowing down) on phone performance
+             * this can be removed in future versions
+             */
 
-            Location location = gpsSensor.getLastLocation();
-            /**
-             * new data is now added to GPS information
-             * this new data is UNIX timestamp as given by the GPS
-             * New GPS Data:
-             *      latitude, longitude, accuracy, altitude, speed, time
-             */
-            String locationData = "";
-            if (location == null) locationData = "-,-,-,-,-,-";
-            else {
-                locationData = Double.toString(location.getLatitude()) + "," + Double.toString(location.getLongitude()) + "," + Double.toString(location.getAccuracy()) + "," + Double.toString(location.getAltitude()) + "," + Double.toString(location.getSpeed()) + "," + Long.toString(location.getTime());
-            }
-            // write this data to file
-            writeToFile(allSensorData, locationData);
-            lastWriteTime = currTime;
-            /**
-             * Sending this information back to activity for displaying on view
-             */
+            String sensorData = allData.toString();
+            String locationData = gpsSensor.getLastLocationInfo();
+            // Sending this information back to activity for displaying on view
             Intent intent = new Intent("android.intent.action.MAIN").putExtra("locationData", locationData);
-            intent.putExtra("sensorData", (java.io.Serializable) allSensorData);
+            intent.putExtra("sensorData", (java.io.Serializable) sensorData);
             this.sendBroadcast(intent);
+            allData.append(",");
+            allData.append(locationData);
+
+            // appending GPS data
+            //allData.append(",");
+            //allData.append(gpsSensor.getLastLocationInfo());
+
+            // appending WiFi and cellular data
+            /**
+             * DISABLED
+             * Calling wifiManager at this rate will cause the application to crash.
+             * We need to come up with some other plan to get the wifi SSIDs /their info
+             */
+            //allData.append(",");
+            //allData.append(wifiReader.getWifiSignals());
+            //System.out.println(wifiReader.getWifiSignals());
+
+            // CELLULAR DISABLED
+            // optionalData = optionalData + cellularReader.getCellularSignals();
+
+            // write this data to file
+            allData.append("\n");
+            writeToFile();
+            lastWriteTime = currTime;
         }
     }
 
@@ -161,16 +205,38 @@ public class DataRecorderService extends Service implements SensorEventListener 
 
     /**
      * Writing data to file.
-     *
-     * @param allSensorData
-     * @param locationData
+     * all the data except the timeStamp which is to be appended into file
      */
-    public void writeToFile(String allSensorData, String locationData) {
-        String allData = timeStampFormat.format(new Date()) + "," + allSensorData + "," + locationData + "\n";
+    public void writeToFile() {
+        /**
+         * <p>
+         *     Storing sensor, location and wifi data only.
+         *     Not storing the cellular data.
+         * </p>
+         */
+        // WRITE LAG DISABLED
+        //long beforeTime = System.nanoTime();
         try {
-            dataOutputStream.write(allData.getBytes());
+            dataOutputStream.write(allData.toString().getBytes());
+            allData.setLength(0);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        /**
+         * <p>
+         *     Now storing lag time in a new file.
+         * </p>
+         */
+        // WRITE LAG DISABLED
+        /**
+        long currTime = System.nanoTime();
+        allData= Long.toString(beforeTime) +","+ Long.toString(currTime)+","+ Long.toString(currTime-beforeTime)+"\n";
+        try {
+            logOutputStream.write(allData.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+         */
     }
+
 }

@@ -15,22 +15,25 @@ import android.hardware.SensorManager;
  * A java class implemented as a separate listener to gyroscope only.
  */
  public class CustomGyroScope implements SensorEventListener {
-    private Sensor gyro;
-    private SensorManager sensorManager;
+    private final SensorManager sensorManager;
     private float[] lastReading;
+    private final boolean gyroPresent;
+    private StringBuilder gyroData;
 
     public CustomGyroScope(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        lastReading = new float[3];
-        gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_FASTEST);
+        gyroPresent = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)!= null;
+        if(gyroPresent) {
+            lastReading = new float[3];
+            Sensor gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_FASTEST);
+            gyroData = new StringBuilder();
+        }
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        for (int i = 0; i < 3; i++) {
-            lastReading[i] = event.values[i];
-        }
+        System.arraycopy(event.values, 0, lastReading, 0, 3);
     }
 
     @Override
@@ -38,19 +41,27 @@ import android.hardware.SensorManager;
 
     }
 
-    public boolean isGyroScopePresent() {
-        return sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null;
-    }
-
-    public float[] getLastReading() {
-        return this.lastReading;
-    }
 
     public String getLastReadingString() {
-        return String.format("%.3f", lastReading[0]) + "," + String.format("%.3f", lastReading[1]) + "," + String.format("%.3f", lastReading[2]);
+        if(isGyroPresent()) {
+            // resetting the builder
+            gyroData.setLength(0);
+            gyroData.append(String.format("%.3f", lastReading[0]));
+            gyroData.append(",");
+            gyroData.append(String.format("%.3f", lastReading[1]));
+            gyroData.append(",");
+            gyroData.append(String.format("%.3f", lastReading[2]));
+            return gyroData.toString();
+        }
+        else return "-,-,-";
+    }
+
+    boolean isGyroPresent(){
+        return this.gyroPresent;
     }
 
     public void unregisterListener() {
-        sensorManager.unregisterListener(this);
+        if(isGyroPresent())
+            sensorManager.unregisterListener(this);
     }
 }

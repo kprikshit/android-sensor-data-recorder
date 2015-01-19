@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
@@ -37,6 +38,9 @@ public class MainActivity extends ActionBarActivity {
     private boolean isDisplayDataEnabled = false;
     private boolean isRecordDataEnabled = false;
     private BroadcastReceiver receiver;
+    IntentFilter intentFilter = new IntentFilter("android.intent.action.MAIN");
+    private WifiManager wifiManager;
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,9 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
+        // for checking whether wifi is on or not.
+        wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         /**
          * Initially, the CardView gpsDataCard and sensorData are not displayed
@@ -71,8 +78,6 @@ public class MainActivity extends ActionBarActivity {
 
         //check whether the GPS is turned on or not here only,instead of checking in the service.
         // after checking, start/stop service accordingly.
-        final LocationManager locationManager;
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         /**
          * Record Data Switch Listener
          */
@@ -95,6 +100,10 @@ public class MainActivity extends ActionBarActivity {
                         // set the switched to off state
                         recordSwitch.setChecked(false);
                         isRecordDataEnabled = false;
+                    }
+                    // after all this, we ask user for WiFi permissions
+                    if( !wifiManager.isWifiEnabled() ){
+                        //showWiFiSettingsAlert();
                     }
                 } else
                     stopService(new Intent(getBaseContext(), DataRecorderService.class));
@@ -131,7 +140,6 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onResume() {
         super.onResume();
-        IntentFilter intentFilter = new IntentFilter("android.intent.action.MAIN");
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -140,9 +148,7 @@ public class MainActivity extends ActionBarActivity {
                     String sensorData = intent.getStringExtra("sensorData");
                     // get the GPS data in format of string
                     String locationData = intent.getStringExtra("locationData");
-                    /**
-                     * Update the GUI
-                     */
+
                     updateSensorCard(sensorData);
                     updateGPSCard(locationData);
                 }
@@ -173,11 +179,13 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Toast.makeText(this, "Setting will come in next Version", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Wait for Next Version.", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (id == R.id.action_about) {
-            startActivity(new Intent(this, About.class));
+            Toast.makeText(this, "Wait for Next Version.", Toast.LENGTH_SHORT).show();
+            // about activity launch has been disabled at the moment to add necessary UI.
+            //startActivity(new Intent(this, About.class));
             return true;
         }
 
@@ -187,7 +195,7 @@ public class MainActivity extends ActionBarActivity {
     /**
      * update the sensor data onto the sensorDataCard
      * List Format:
-     * Accel, Gyro, Magneto, Light
+     * Accel(3), Gyro(3), Magneto(3), Light(1)
      * All data should be in String format
      *
      * @param sensorData
@@ -199,21 +207,11 @@ public class MainActivity extends ActionBarActivity {
         TextView lightData = (TextView) findViewById(R.id.lightData);
         String[] array = sensorData.split(",");
 
-        accelData.setText(array[0] + "," + array[1] + "," + array[2] + " m/s2");
-        gyroData.setText(array[3] + "," + array[4] + "," + array[5] + " rad/s");
-        magnetoData.setText(array[6] + "," + array[7] + "," + array[8] + " μT");
-        lightData.setText(array[9] + " lux");
-
-        /*
-        if (!sensorData.get(1).isEmpty()) gyroData.setText(sensorData.get(1)+" rad/s");
-        else gyroData.setText("-,-,-");
-
-        if (!sensorData.get(2).isEmpty()) magnetoData.setText(sensorData.get(2)+" μT");
-        else magnetoData.setText("-,-,-");
-
-        if (!sensorData.get(3).isEmpty()) lightData.setText(sensorData.get(3)+" lux");
-        else lightData.setText("-");
-        */
+        // in place of 0 , there is timestamp now.
+        accelData.setText(array[1] + "," + array[2] + "," + array[3] + " m/s2");
+        gyroData.setText(array[4] + "," + array[5] + "," + array[6] + " rad/s");
+        magnetoData.setText(array[7] + "," + array[8] + "," + array[9] + " μT");
+        lightData.setText(array[10] + " lux");
     }
 
     /**
@@ -224,7 +222,7 @@ public class MainActivity extends ActionBarActivity {
      * @param locationData
      */
     public void updateGPSCard(String locationData) {
-        if (!locationData.isEmpty()) {
+        if ( !locationData.isEmpty() ) {
             String array[] = locationData.split(",");
             TextView latitude = (TextView) findViewById(R.id.latitudeData);
             TextView longitude = (TextView) findViewById(R.id.longitudeData);
@@ -286,6 +284,36 @@ public class MainActivity extends ActionBarActivity {
             }
         });
         alertDialog.show();
+    }
+
+    /**
+     * This alert dialog box is shown when WiFi is disabled.
+     */
+    public void showWiFiSettingsAlert(){
+        AlertDialog.Builder wifiDialog = new AlertDialog.Builder(this);
+        wifiDialog.setTitle("Switch on WiFi?");
+        wifiDialog.setMessage("WiFi access is required for better results. Do you want to switch it on? (Optional)");
+        wifiDialog.setPositiveButton("Turn on", new DialogInterface.OnClickListener() {
+            /**
+             * What happens when user clicks on settings.
+             * @param dialog
+             * @param which
+             */
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                wifiManager.setWifiEnabled(true);
+                dialog.cancel();
+            }
+        });
+
+        wifiDialog.setNegativeButton("No, Thanks", new DialogInterface.OnClickListener() {
+            //when click button is pressed
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        wifiDialog.show();
     }
 
 }

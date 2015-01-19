@@ -19,12 +19,15 @@ import android.hardware.SensorManager;
     private Sensor accel;
     private SensorManager sensorManager;
     private float[] lastReading;
+    private boolean accelPresent;
 
     public CustomAccelerometer(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        lastReading = new float[3];
-        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+        accelPresent = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null;
+        if(accelPresent) {
+            accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+        }
     }
 
     @Override
@@ -39,25 +42,26 @@ import android.hardware.SensorManager;
 
     }
 
-    /**
-     * Checks whether the accelerometer is present or not.
-     * @return
-     */
-    public boolean isAccelerometerPresent() {
-        return sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null;
-    }
-
-
-    public float[] getLastReading() {
-        return this.lastReading;
-    }
-
     public String getLastReadingString() {
-        return String.format("%.3f", lastReading[0]) + "," + String.format("%.3f", lastReading[1]) + "," + String.format("%.3f", lastReading[2]);
+        if(isAccelPresent()) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(String.format("%.3f", lastReading[0]));
+            stringBuilder.append(",");
+            stringBuilder.append(String.format("%.3f", lastReading[1]));
+            stringBuilder.append(",");
+            stringBuilder.append(String.format("%.3f", lastReading[2]));
+            return stringBuilder.toString();
+        }
+        else return "-,-,-";
+    }
+
+    public boolean isAccelPresent(){
+        return this.accelPresent;
     }
 
     public void unregisterListener() {
-        sensorManager.unregisterListener(this);
+        if(isAccelPresent())
+            sensorManager.unregisterListener(this);
     }
 
 }

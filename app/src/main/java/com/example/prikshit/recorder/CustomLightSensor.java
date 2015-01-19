@@ -15,14 +15,17 @@ import android.hardware.SensorManager;
  * A java class implemented as a separate listener to light sensor only.
  */
 public class CustomLightSensor implements SensorEventListener {
-    private Sensor light;
-    private SensorManager sensorManager;
+    private final SensorManager sensorManager;
     private float lastReading;
+    private final boolean lightSensorPresent;
 
     public CustomLightSensor(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_FASTEST);
+        lightSensorPresent = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null;
+        if(lightSensorPresent) {
+            Sensor light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_FASTEST);
+        }
     }
 
     @Override
@@ -35,19 +38,19 @@ public class CustomLightSensor implements SensorEventListener {
 
     }
 
-    public boolean isLightSensorPresent() {
-        return sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null;
-    }
-
-    public float getLastReading() {
-        return this.lastReading;
-    }
-
     public String getLastReadingString() {
-        return String.format("%.3f", lastReading);
+        if(isLightSensorPresent()) {
+            return String.format("%.3f", lastReading);
+        }
+        else return "-";
+    }
+
+    boolean isLightSensorPresent(){
+        return this.lightSensorPresent;
     }
 
     public void unregisterListener() {
-        sensorManager.unregisterListener(this);
+        if(isLightSensorPresent())
+            sensorManager.unregisterListener(this);
     }
 }

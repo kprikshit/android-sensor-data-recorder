@@ -5,12 +5,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationRequest;
 
 /**
  * Prikshit Kumar
@@ -28,9 +25,12 @@ import com.google.android.gms.location.LocationRequest;
 
     private Location lastLocation;
     private LocationManager locationManager;
-    private Context appContext;
     private boolean isGPSEnabled;
     private boolean isNetworkEnabled;
+    // we are making this variable global because we don't want to allocate memory every time
+    // we call the function getLastLocationInfo()
+    // same thing is implemented in other listeners also
+    private StringBuilder gpsData;
 
     /**
      * Location provider
@@ -45,34 +45,24 @@ import com.google.android.gms.location.LocationRequest;
      * @param context
      */
     public CustomGPS(Context context) {
-        appContext = context;
-        // registering the locationManager
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        /**
-         * <p>checking which location providers are enabled and which are not</p>
-         */
+        gpsData = new StringBuilder();
+
+        //checking which location providers are enabled and which are not
         isGPSEnabled = locationManager.isProviderEnabled(gpsLocationProvider);
         isNetworkEnabled = locationManager.isProviderEnabled(networkLocationProvider);
 
-        // requesting location updates
         locationManager.requestLocationUpdates(gpsLocationProvider, 0, 0, this);
         lastLocation = locationManager.getLastKnownLocation(gpsLocationProvider);
-        //if gps has not given any location, then try the network location
+        // if gps has not given any location, then try the network Location provider
         if(lastLocation == null){
             // first, check whether the network is enabled or not.
-            Log.d("using the network provider now","using network");
             if(isNetworkEnabled){
                 lastLocation = locationManager.getLastKnownLocation(networkLocationProvider);
             }
         }
     }
 
-    /**
-     * What happens when location is changed:
-     * update the variable lastLocation
-     *
-     * @param location
-     */
     @Override
     public void onLocationChanged(Location location) {
         lastLocation = location;
@@ -104,15 +94,36 @@ import com.google.android.gms.location.LocationRequest;
     }
 
     /**
-     * Returns the last known location
+     * return the last known location in a string format.
+     * the delimiter should be comma (,)
+     * /**
+     * <p>
+     *     Time is UNIX timestamp as given by the GPS
+     *     Format: latitude,longitude,accuracy,altitude,speed,time
+     * </p>
+     * @return
      */
-    public Location getLastLocation() {
-        return this.lastLocation;
+    public String getLastLocationInfo(){
+        if(this.lastLocation != null ) {
+            gpsData.setLength(0);
+            gpsData.append(lastLocation.getLatitude());
+            gpsData.append(",");
+            gpsData.append(lastLocation.getLongitude());
+            gpsData.append(",");
+            gpsData.append(lastLocation.getAccuracy());
+            gpsData.append(",");
+            gpsData.append(lastLocation.getAltitude());
+            gpsData.append(",");
+            gpsData.append(lastLocation.getSpeed());
+            gpsData.append(",");
+            gpsData.append(lastLocation.getTime());
+            return gpsData.toString();
+        }
+        else{
+            return "-,-,-,-,-,-,";
+        }
     }
 
-    /**
-     * removing location requests
-     */
     public void unregisterListener() {
         if(locationManager != null)
             locationManager.removeUpdates(this);
