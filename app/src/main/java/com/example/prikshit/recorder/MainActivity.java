@@ -58,8 +58,9 @@ public class MainActivity extends ActionBarActivity {
         final CardView sensorDataCard = (CardView) findViewById(R.id.sensorCard);
         final CardView gpsDataCard = (CardView) findViewById(R.id.gpsDataCard);
         if (!isDisplayDataEnabled) {
-            sensorDataCard.setVisibility(CardView.INVISIBLE);
-            gpsDataCard.setVisibility(CardView.INVISIBLE);
+            //using GONE instead of INVISIBLE
+            sensorDataCard.setVisibility(CardView.GONE);
+            gpsDataCard.setVisibility(CardView.GONE);
         }
 
         /**
@@ -118,11 +119,15 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    //debug purposes
                     sensorDataCard.setVisibility(CardView.VISIBLE);
                     gpsDataCard.setVisibility(CardView.VISIBLE);
                 } else {
-                    sensorDataCard.setVisibility(CardView.INVISIBLE);
-                    gpsDataCard.setVisibility(CardView.INVISIBLE);
+                    // using GONE instead of INVISIBLE
+                    // stops rendering the element instead of just not showing the card
+                    // i.e. like the card was not even present there.
+                    sensorDataCard.setVisibility(CardView.GONE);
+                    gpsDataCard.setVisibility(CardView.GONE);
                 }
                 /**
                  * Update variable accordingly
