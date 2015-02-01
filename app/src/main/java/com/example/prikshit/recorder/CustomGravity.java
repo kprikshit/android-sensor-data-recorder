@@ -7,10 +7,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 /**
- * Prikshit Kumar
- * <kprikshit22@gmail.com/kprikshit@iitrpr.ac.in>
+ * Parmeet Singh
+ * <sparmeet@iitrpr.ac.in>
  * CSE, IIT Ropar
- * Created on: 08-01-2015
+ * Created on: 01-02-2015
  *
  * A java class implemented as a separate listener to gravity only.
  */

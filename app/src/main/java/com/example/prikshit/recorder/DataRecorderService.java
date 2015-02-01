@@ -27,6 +27,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+/**Created on: 08-01-2015 by:
+   *     Prikshit Kumar
+   *    kprikshit22@gmail.com/kprikshit@iitrpr.ac.in
+   *     CSE, IIT Ropar
+   *     Modified by:
+   *     Parmeet Singh
+   *     sparmeet@iitrpr.ac.in
+*/
 /**
  *
  *
@@ -156,10 +164,10 @@ public class DataRecorderService extends Service implements SensorEventListener 
             allData.append(",");
             // now appending accelerometer data
             float[] mag = magnetometer.getLastReading();
-            float[] gravityValues = gravitySensor.getLastReading();
+            //float[] gravityValues = gravitySensor.getLastReading();
             String magnetoData = String.format("%.3f", mag[0]) + "," +String.format("%.3f", mag[1]) + "," + String.format("%.3f", mag[2]);
-            String accelData = normalizeAcceleration(event.values, mag,gravityValues);
-            allData.append(accelData);
+            //normalized accelerationData appended here
+            appendNormalizedAcceleration(event.values, mag);
 
             // now appending data from other sensors
             allData.append(",");
@@ -208,12 +216,12 @@ public class DataRecorderService extends Service implements SensorEventListener 
         }
     }
 
-    public String normalizeAcceleration(float[] accelerometerValues,float[] geomagneticMatrix,float[] gravityValues)
+    public void appendNormalizedAcceleration(float[] accelerometerValues,float[] geomagneticMatrix)
     {
-        if(accelerometerValues!=null && geomagneticMatrix!=null ) {
+        if(accelerometerValues!=null && geomagneticMatrix!=null) {
             float[] R = new float[16];
             float[] I = new float[16];
-            SensorManager.getRotationMatrix(R, I, gravityValues, geomagneticMatrix);
+            SensorManager.getRotationMatrix(R, I, gravitySensor.getLastReading(), geomagneticMatrix);
             float[] relativacc = new float[4];
             float[] inv = new float[16];
             float[] earthAcc = new float[16];
@@ -224,10 +232,10 @@ public class DataRecorderService extends Service implements SensorEventListener 
             Matrix.invertM(inv, 0, R, 0);
             Matrix.multiplyMV(earthAcc, 0, inv, 0, relativacc, 0);
 
-            return String.format("%.3f",earthAcc[0]) + "," + String.format("%.3f",earthAcc[1]) + "," + String.format("%.3f",earthAcc[2]);
+            allData.append(String.format("%.3f",earthAcc[0]) + "," + String.format("%.3f",earthAcc[1]) + "," + String.format("%.3f",earthAcc[2]));
         }
         else
-            return "-,-,-";
+            allData.append(String.format("%.3f",accelerometerValues[0]) + "," + String.format("%.3f",accelerometerValues[1]) + "," + String.format("%.3f",accelerometerValues[2]));
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
