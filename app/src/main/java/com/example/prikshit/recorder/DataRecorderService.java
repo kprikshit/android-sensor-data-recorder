@@ -9,6 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
@@ -16,11 +17,13 @@ import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +39,7 @@ public class DataRecorderService extends Service implements SensorEventListener 
      * File Read Write Information
      */
     String fileName = "sensorData.csv";
+    float earthAcc[];
     /**
      * file information for storing lag between files
      */
@@ -59,8 +63,11 @@ public class DataRecorderService extends Service implements SensorEventListener 
     private CustomLightSensor lightSensor;
     private CustomMagnetometer magnetometer;
     private CustomGPS gpsSensor;
+    private CustomGravity gravitySensor;
     private Sensor accelSensor;
     private SensorManager sensorManager;
+
+
     private CustomWifi wifiReader;
     // CELLULAR DISABLED cellular data has also been disabled for this version.
     // private CustomCellular cellularReader;
@@ -84,6 +91,7 @@ public class DataRecorderService extends Service implements SensorEventListener 
         magnetometer = new CustomMagnetometer(this);
         gpsSensor = new CustomGPS(this);
         wifiReader = new CustomWifi(this);
+        gravitySensor = new CustomGravity(this);
         // CELLULAR DISABLED
         //cellularReader = new CustomCellular(this);
 
@@ -129,6 +137,7 @@ public class DataRecorderService extends Service implements SensorEventListener 
         magnetometer.unregisterListener();
         lightSensor.unregisterListener();
         gpsSensor.unregisterListener();
+        gravitySensor.unregisterListener();
         sensorManager.unregisterListener(this);
         super.onDestroy();
     }
@@ -146,16 +155,17 @@ public class DataRecorderService extends Service implements SensorEventListener 
             allData.append(timeStampFormat.format(new Date()));
             allData.append(",");
             // now appending accelerometer data
-            allData.append(String.format("%.3f", event.values[0]));
-            allData.append(",");
-            allData.append(String.format("%.3f", event.values[1]));
-            allData.append(",");
-            allData.append(String.format("%.3f", event.values[2]));
+            float[] mag = magnetometer.getLastReading();
+            float[] gravityValues = gravitySensor.getLastReading();
+            String magnetoData = String.format("%.3f", mag[0]) + "," +String.format("%.3f", mag[1]) + "," + String.format("%.3f", mag[2]);
+            String accelData = normalizeAcceleration(event.values, mag,gravityValues);
+            allData.append(accelData);
+
             // now appending data from other sensors
             allData.append(",");
             allData.append(gyroScope.getLastReadingString());
             allData.append(",");
-            allData.append(magnetometer.getLastReadingString());
+            allData.append(magnetoData);
             allData.append(",");
             allData.append(lightSensor.getLastReadingString());
             // for sending to display on activity screen
@@ -198,6 +208,27 @@ public class DataRecorderService extends Service implements SensorEventListener 
         }
     }
 
+    public String normalizeAcceleration(float[] accelerometerValues,float[] geomagneticMatrix,float[] gravityValues)
+    {
+        if(accelerometerValues!=null && geomagneticMatrix!=null ) {
+            float[] R = new float[16];
+            float[] I = new float[16];
+            SensorManager.getRotationMatrix(R, I, gravityValues, geomagneticMatrix);
+            float[] relativacc = new float[4];
+            float[] inv = new float[16];
+            float[] earthAcc = new float[16];
+            relativacc[0] = accelerometerValues[0];
+            relativacc[1] = accelerometerValues[1];
+            relativacc[2] = accelerometerValues[2];
+            relativacc[3] = 0;
+            Matrix.invertM(inv, 0, R, 0);
+            Matrix.multiplyMV(earthAcc, 0, inv, 0, relativacc, 0);
+
+            return String.format("%.3f",earthAcc[0]) + "," + String.format("%.3f",earthAcc[1]) + "," + String.format("%.3f",earthAcc[2]);
+        }
+        else
+            return "-,-,-";
+    }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 

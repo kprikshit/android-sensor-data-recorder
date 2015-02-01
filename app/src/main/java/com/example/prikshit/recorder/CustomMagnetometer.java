@@ -55,6 +55,10 @@ public class CustomMagnetometer implements SensorEventListener {
         else return "-,-,-";
     }
 
+    public float[] getLastReading(){
+        return this.lastReading;
+    }
+
     boolean isMagnetoPresent(){
         return this.magnetoPresent;
     }
