@@ -165,7 +165,10 @@ public class DataRecorderService extends Service implements SensorEventListener 
             // now appending accelerometer data
             float[] mag = magnetometer.getLastReading();
             //float[] gravityValues = gravitySensor.getLastReading();
-            String magnetoData = String.format("%.3f", mag[0]) + "," +String.format("%.3f", mag[1]) + "," + String.format("%.3f", mag[2]);
+            StringBuilder magnetoData = new StringBuilder();
+            magnetoData.append(String.format("%.3f", mag[0])).append(",");
+            magnetoData.append(String.format("%.3f", mag[1])).append(",");
+            magnetoData.append(String.format("%.3f", mag[2]));
             //normalized accelerationData appended here
             appendNormalizedAcceleration(event.values, mag);
 
@@ -218,10 +221,11 @@ public class DataRecorderService extends Service implements SensorEventListener 
 
     public void appendNormalizedAcceleration(float[] accelerometerValues,float[] geomagneticMatrix)
     {
-        if(accelerometerValues!=null && geomagneticMatrix!=null) {
+        float gravityValues[] = gravitySensor.getLastReading();
+        if(accelerometerValues!=null && geomagneticMatrix!=null && gravityValues!=null) {
             float[] R = new float[16];
             float[] I = new float[16];
-            SensorManager.getRotationMatrix(R, I, gravitySensor.getLastReading(), geomagneticMatrix);
+            SensorManager.getRotationMatrix(R, I, gravityValues, geomagneticMatrix);
             float[] relativacc = new float[4];
             float[] inv = new float[16];
             float[] earthAcc = new float[16];
@@ -232,10 +236,15 @@ public class DataRecorderService extends Service implements SensorEventListener 
             Matrix.invertM(inv, 0, R, 0);
             Matrix.multiplyMV(earthAcc, 0, inv, 0, relativacc, 0);
 
-            allData.append(String.format("%.3f",earthAcc[0]) + "," + String.format("%.3f",earthAcc[1]) + "," + String.format("%.3f",earthAcc[2]));
+            allData.append(String.format("%.3f", earthAcc[0])).append(",");
+            allData.append(String.format("%.3f", earthAcc[1])).append(",");
+            allData.append(String.format("%.3f", earthAcc[2]));
         }
-        else
-            allData.append(String.format("%.3f",accelerometerValues[0]) + "," + String.format("%.3f",accelerometerValues[1]) + "," + String.format("%.3f",accelerometerValues[2]));
+        else {
+            allData.append(String.format("%.3f", accelerometerValues[0])).append(",");
+            allData.append(String.format("%.3f", accelerometerValues[1])).append(",");
+            allData.append(String.format("%.3f", accelerometerValues[2]));
+        }
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
