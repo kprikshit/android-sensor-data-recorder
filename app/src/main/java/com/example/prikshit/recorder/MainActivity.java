@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.CardView;
@@ -22,6 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.LocationSource;
+
+import java.io.File;
 
 /**
  * Prikshit Kumar
@@ -44,6 +47,15 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //if uploader serice is not running
+        System.out.println("out of if");
+
+        if (!isServiceRunning(UploaderService.class)){
+            System.out.println("in if");
+            Intent intent = new Intent(Intent.ACTION_SYNC, null, this, UploaderService.class);
+            startService(intent);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.app_bar);
@@ -106,7 +118,8 @@ public class MainActivity extends ActionBarActivity {
                     if( !wifiManager.isWifiEnabled() ){
                         //showWiFiSettingsAlert();
                     }
-                } else
+                }
+                else
                     stopService(new Intent(getBaseContext(), DataRecorderService.class));
             }
         });

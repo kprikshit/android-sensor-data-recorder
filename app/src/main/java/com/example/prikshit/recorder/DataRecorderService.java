@@ -75,6 +75,12 @@ public class DataRecorderService extends Service implements SensorEventListener 
     private Sensor accelSensor;
     private SensorManager sensorManager;
 
+    final String uploadFilePath = sdDirectory.getPath();
+    final String uploadFileName = fileName;
+    String serverIP = "10.1.5.24";
+    private String upLoadServerUri = "http://"+serverIP+"/uploads/upload_file.php";
+    String sourceFileUri = uploadFilePath+'/'+uploadFileName;
+
 
     private CustomWifi wifiReader;
     // CELLULAR DISABLED cellular data has also been disabled for this version.
@@ -147,6 +153,8 @@ public class DataRecorderService extends Service implements SensorEventListener 
         gpsSensor.unregisterListener();
         gravitySensor.unregisterListener();
         sensorManager.unregisterListener(this);
+
+//        new Uploader(this).execute(sourceFileUri,upLoadServerUri);
         super.onDestroy();
     }
 
