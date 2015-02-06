@@ -171,23 +171,27 @@ public class DataRecorderService extends Service implements SensorEventListener 
             allData.append(timeStampFormat.format(new Date()));
             allData.append(",");
             // now appending accelerometer data
-            float[] mag = magnetometer.getLastReading();
-            //float[] gravityValues = gravitySensor.getLastReading();
-            String magnetoData = String.format("%.3f", mag[0]) + "," +String.format("%.3f", mag[1]) + "," + String.format("%.3f", mag[2]);
             //normalized accelerationData appended here
+            float[] mag = magnetometer.getLastReading();
             appendNormalizedAcceleration(event.values, mag);
 
             // now appending data from other sensors
             allData.append(",");
             allData.append(gyroScope.getLastReadingString());
             allData.append(",");
-            allData.append(magnetoData);
+            //magnetometer data
+            allData.append(String.format("%.3f", mag[0]));
+            allData.append(",");
+            allData.append(String.format("%.3f", mag[1]));
+            allData.append(",");
+            allData.append(String.format("%.3f", mag[2]));
             allData.append(",");
             allData.append(lightSensor.getLastReadingString());
             // for sending to display on activity screen
             /**
              * FUTURE SCOPE:
-             * Calling broadcast this many time may cause some undesirable effect (slowing down) on phone performance
+             * Calling broadcast this many time may cause some
+             * undesirable effect (slowing down) on phone performance
              * this can be removed in future versions
              */
 
@@ -224,27 +228,41 @@ public class DataRecorderService extends Service implements SensorEventListener 
         }
     }
 
-    public void appendNormalizedAcceleration(float[] accelerometerValues,float[] geomagneticMatrix)
-    {
-        if(accelerometerValues!=null && geomagneticMatrix!=null) {
+
+    /**
+     * 
+     * @param accelerometerValues
+     * @param geomagneticValues 
+     */
+    public void appendNormalizedAcceleration(float[] accelerometerValues, float[] geomagneticValues){
+        if(accelerometerValues != null && magnetometer.isMagnetoPresent() && !gravitySensor.isGravityPresent() ) {
             float[] R = new float[16];
-            float[] I = new float[16];
-            SensorManager.getRotationMatrix(R, I, gravitySensor.getLastReading(), geomagneticMatrix);
-            float[] relativacc = new float[4];
+            SensorManager.getRotationMatrix(R, new float[16], gravitySensor.getLastReading(), geomagneticValues);
+            float[] relativeAcc = new float[4];
             float[] inv = new float[16];
             float[] earthAcc = new float[16];
-            relativacc[0] = accelerometerValues[0];
-            relativacc[1] = accelerometerValues[1];
-            relativacc[2] = accelerometerValues[2];
-            relativacc[3] = 0;
+            relativeAcc[0] = accelerometerValues[0];
+            relativeAcc[1] = accelerometerValues[1];
+            relativeAcc[2] = accelerometerValues[2];
+            relativeAcc[3] = 0;
             Matrix.invertM(inv, 0, R, 0);
-            Matrix.multiplyMV(earthAcc, 0, inv, 0, relativacc, 0);
+            Matrix.multiplyMV(earthAcc, 0, inv, 0, relativeAcc, 0);
 
-            allData.append(String.format("%.3f",earthAcc[0]) + "," + String.format("%.3f",earthAcc[1]) + "," + String.format("%.3f",earthAcc[2]));
+            allData.append(String.format("%.3f", earthAcc[0]));
+            allData.append(",");
+            allData.append(String.format("%.3f", earthAcc[1]));
+            allData.append(",");
+            allData.append(String.format("%.3f", earthAcc[2]));
         }
-        else
-            allData.append(String.format("%.3f",accelerometerValues[0]) + "," + String.format("%.3f",accelerometerValues[1]) + "," + String.format("%.3f",accelerometerValues[2]));
+        else {
+            allData.append(String.format("%.3f", accelerometerValues[0]));
+            allData.append(",");
+            allData.append(String.format("%.3f", accelerometerValues[1]));
+            allData.append(",");
+            allData.append(String.format("%.3f", accelerometerValues[2]));
+        }
     }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
@@ -255,14 +273,10 @@ public class DataRecorderService extends Service implements SensorEventListener 
      * all the data except the timeStamp which is to be appended into file
      */
     public void writeToFile() {
-        /**
-         * <p>
-         *     Storing sensor, location and wifi data only.
-         *     Not storing the cellular data.
-         * </p>
-         */
+        // Storing sensor, location data only.
+        // Not storing the cellular data and wifi data
         // WRITE LAG DISABLED
-        //long beforeTime = System.nanoTime();
+        // long beforeTime = System.nanoTime();
         try {
             dataOutputStream.write(allData.toString().getBytes());
             allData.setLength(0);
