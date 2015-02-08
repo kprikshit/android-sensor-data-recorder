@@ -11,9 +11,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.Matrix;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import java.io.File;
@@ -24,26 +22,37 @@ import java.util.Date;
 
 /**
  *
+ */
+/**
+ * Created on: 08-01-2015 by:
+ * Prikshit Kumar
+ * kprikshit22@gmail.com/kprikshit@iitrpr.ac.in
+ *
+ * Contributed by:
+ * Parmeet Singh
+ * sparmeet@iitrpr.ac.in
  *
  * The java class is implemented as a service which listens to various listener and
  * appends the data obtained in a file.
  */
-public class DataRecorderService extends Service {
-    // various intent information
-    private final String displayDataSwitchIntentName = "displayEnabled";
-    private final String sensorDataIntentName = "sensorData";
-    private final String gpsDataIntentName = "locationData";
-    private final String receivedIntentFilterName = "android.intent.action.displaySwitchInfo";
-    private final String sentIntentFilterName = "android.intent.action.MAIN";
+public class Recorder2 extends Service implements SensorEventListener {
 
-    // information about file for storing lag between consecutive writing to file
+    /**
+     * File Read Write Information
+     */
+    String fileName = "sensorData.csv";
+    float earthAcc[];
+    /**
+     * file information for storing lag between files
+     */
     // WRITE LAG DISABLED
     // String lagFileName = "fileWriteLag.csv";
-    // Format of TimeStamp to be used in front of each reading
-    SimpleDateFormat timeStampFormat = new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
-    // info regarding to file used for storing the data
-    private File sdDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + Constants.DIRECTORY);
-    private File dataFile = new File(sdDirectory, Constants.DATA_FILE_NAME );
+    /**
+     * Format of TimeStamp to be used in front of each reading
+     */
+    SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy:MM:dd:hh:mm:ss.SSS");
+    private File sdDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Data_Recorder");
+    private File dataFile = new File(sdDirectory, fileName);
     private FileOutputStream dataOutputStream;
     // WRITE LAG DISABLED the lag file Name
     // private File logFile = new File(sdDirectory, lagFileName);
@@ -56,9 +65,17 @@ public class DataRecorderService extends Service {
     private CustomLightSensor lightSensor;
     private CustomMagnetometer magnetometer;
     private CustomGPS gpsSensor;
+    private CustomGravity gravitySensor;
     private Sensor accelSensor;
     private SensorManager sensorManager;
-    private CustomGravity gravitySensor;
+
+    final String uploadFilePath = sdDirectory.getPath();
+    final String uploadFileName = fileName;
+    String serverIP = "10.1.5.24";
+    private String upLoadServerUri = "http://"+serverIP+"/uploads/upload_file.php";
+    String sourceFileUri = uploadFilePath+'/'+uploadFileName;
+
+
     private CustomWifi wifiReader;
     // CELLULAR DISABLED cellular data has also been disabled for this version.
     // private CustomCellular cellularReader;
@@ -68,19 +85,18 @@ public class DataRecorderService extends Service {
     // the minimum delay for between appending data to the file.
     private long minUpdateDelay = 0;
 
-    // for various sensor data and gps data
-    // using a global variable to reduce unnecessary allocation
+    // for storing all sensors and other data
     private StringBuilder allData = new StringBuilder();
     // display data enabled or not in activity
-    private boolean displayDataEnabled = false;
-    private SensorEventListener mSensorListener;
-    // broadcast receiver corresponding to display switch in the activity
+    private boolean displayEnabled = false;
     private BroadcastReceiver displaySwitchReceiver;
-    // filter for intents sent by the display data switch in the activity
-    IntentFilter intentFilter = new IntentFilter(receivedIntentFilterName);
-    // tag for debug messages
-    private final String TAG = "DataRecorderService2";
+    // which intents to listen to
+    IntentFilter intentFilter = new IntentFilter("android.intent.action.displaySwitchInfo");
 
+    /**
+     * What to do when the service is created
+     * Initialize all the sensorListeners
+     */
     @Override
     public void onCreate() {
         gyroScope = new CustomGyroScope(this);
@@ -117,64 +133,58 @@ public class DataRecorderService extends Service {
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final Context context = getBaseContext();
-
-        // a new runnable task which will be run on a separate thread
+        final SensorEventListener currSensorListener = this;
         Runnable r  = new Runnable() {
             @Override
             public void run() {
-                Looper.prepare();
-                Handler handler = new Handler();
+                System.out.println("service thread id: " + android.os.Process.myTid());
 
-                Log.i(TAG,"Service Thread ID(Start): " + android.os.Process.myTid());
-                // initializing accelerometer sensor and its event listener
                 sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
                 accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                sensorManager.registerListener(currSensorListener, accelSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
-                // sensor listener
-                mSensorListener = new SensorEventListener() {
-                    @Override
-                    public void onSensorChanged(SensorEvent event) {
-                        getData(context, event);
-                    }
-                    @Override
-                    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                    }
-                };
-                // registering event listener
-                sensorManager.registerListener(mSensorListener, accelSensor, RecordingMode.getCurrentMode() , handler);
-
-                // broadcast receiver for displayData Switch Information
+                // broadcast receiver for displaySwitch Information
                 displaySwitchReceiver= new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        displayDataEnabled = intent.getBooleanExtra(displayDataSwitchIntentName,false);
+                        displayEnabled = intent.getBooleanExtra("displayEnabled",false);
                     }
                 };
-
                 getBaseContext().registerReceiver(displaySwitchReceiver, intentFilter);
-                Log.i(TAG,"service Thread ID: "+String.valueOf(android.os.Process.myTid()));
-                Looper.loop();
+                Log.i("currThread", "currently on thread: " + String.valueOf(android.os.Process.myTid()));
             }
         };
-        // starting a new thread
-        Thread workerThread = new Thread(r);
-        workerThread.start();
+
+        Thread worker = new Thread(r);
+        worker.start();
         return START_STICKY;
     }
 
+
+    /**
+     * Before destroying, de-register all the listeners
+     */
     @Override
     public void onDestroy() {
         gyroScope.unregisterListener();
         magnetometer.unregisterListener();
         lightSensor.unregisterListener();
         gpsSensor.unregisterListener();
-        sensorManager.unregisterListener(mSensorListener);
+        gravitySensor.unregisterListener();
+        sensorManager.unregisterListener(this);
+        //new Uploader(this).execute(sourceFileUri,upLoadServerUri);
         unregisterReceiver(displaySwitchReceiver);
         super.onDestroy();
     }
 
-    public void getData(Context context, SensorEvent event){
+    /**
+     * SensorEvent Listener was triggered,
+     * Time to write readings to file
+     *
+     * @param event
+     */
+    @Override
+    public void onSensorChanged(SensorEvent event) {
         long currTime = System.currentTimeMillis();
         if (currTime - lastWriteTime > minUpdateDelay) {
             allData.append(timeStampFormat.format(new Date()));
@@ -195,20 +205,24 @@ public class DataRecorderService extends Service {
             allData.append(",");
             allData.append(String.format("%.3f", mag[2]));
             allData.append(",");
-            // light sensor data
             allData.append(lightSensor.getLastReadingString());
-
-            // if display switch is enabled in the activity, only then send the intent which is to be sent to activity
-            if (displayDataEnabled) {
+            /**
+             * FUTURE SCOPE:
+             * Calling broadcast this many time may cause some
+             * undesirable effect (slowing down) on phone performance
+             * this can be removed in future versions
+             */
+            // if display switch is enabled in the activity
+            if(displayEnabled) {
                 String locationData = gpsSensor.getLastLocationInfo();
                 // Sending this information back to activity for displaying on view
-                Intent intent = new Intent(sentIntentFilterName);
-                intent.putExtra(gpsDataIntentName, locationData);
-                intent.putExtra(sensorDataIntentName, allData.toString());
-                context.sendBroadcast(intent);
+                Intent intent = new Intent("android.intent.action.MAIN").putExtra("locationData", locationData);
+                intent.putExtra("sensorData", allData.toString());
+                this.sendBroadcast(intent);
                 allData.append(",");
                 allData.append(locationData);
-            } else {
+            }
+            else{
                 allData.append(",");
                 allData.append(gpsSensor.getLastLocationInfo());
             }
@@ -227,17 +241,13 @@ public class DataRecorderService extends Service {
             // optionalData = optionalData + cellularReader.getCellularSignals();
 
             // write this data to file
-            //Log.i(TAG, "listener on Thread: " + String.valueOf(android.os.Process.myTid()));
+            Log.i("currThread","currently on thread: "+String.valueOf(android.os.Process.myTid()));
             allData.append("\n");
-            try {
-                dataOutputStream.write(allData.toString().getBytes());
-                allData.setLength(0);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            writeToFile();
             lastWriteTime = currTime;
         }
     }
+
 
     /**
      *
@@ -272,4 +282,42 @@ public class DataRecorderService extends Service {
             allData.append(String.format("%.3f", accelerometerValues[2]));
         }
     }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    /**
+     * Writing data to file.
+     * all the data except the timeStamp which is to be appended into file
+     */
+    public void writeToFile() {
+        // Storing sensor, location data only.
+        // Not storing the cellular data and wifi data
+        // WRITE LAG DISABLED
+        // long beforeTime = System.nanoTime();
+        try {
+            dataOutputStream.write(allData.toString().getBytes());
+            allData.setLength(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /**
+         * <p>
+         *     Now storing lag time in a new file.
+         * </p>
+         */
+        // WRITE LAG DISABLED
+        /**
+         long currTime = System.nanoTime();
+         allData= Long.toString(beforeTime) +","+ Long.toString(currTime)+","+ Long.toString(currTime-beforeTime)+"\n";
+         try {
+         logOutputStream.write(allData.getBytes());
+         } catch (IOException e) {
+         e.printStackTrace();
+         }
+         */
+    }
+
 }

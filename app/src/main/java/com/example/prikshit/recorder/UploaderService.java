@@ -2,13 +2,11 @@ package com.example.prikshit.recorder;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
-import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 

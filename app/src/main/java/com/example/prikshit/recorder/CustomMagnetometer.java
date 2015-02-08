@@ -27,7 +27,7 @@ public class CustomMagnetometer implements SensorEventListener {
         if(magnetoPresent) {
             lastReading = new float[3];
             Sensor magneto = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-            sensorManager.registerListener(this, magneto, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, magneto, RecordingMode.getCurrentMode());
             magneticData = new StringBuilder();
         }
     }

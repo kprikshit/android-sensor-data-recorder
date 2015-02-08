@@ -31,7 +31,15 @@
             android:parentActivityName=".MainActivity"></activity>
 
         <service android:name=".DataRecorderService"></service>
-        <service android:name=".UploaderService"></service>
+        <service android:name=".UploaderService"></service>z
+        <service android:name=".Recorder2"></service>
+        <receiver android:name=".RecordingMode">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+                <action android:name="android.intent.action.BATTERY_CHANGED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

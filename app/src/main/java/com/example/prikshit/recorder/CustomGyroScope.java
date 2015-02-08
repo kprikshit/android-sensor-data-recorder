@@ -26,7 +26,7 @@ import android.hardware.SensorManager;
         if(gyroPresent) {
             lastReading = new float[3];
             Sensor gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-            sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, gyro, RecordingMode.getCurrentMode() );
             gyroData = new StringBuilder();
         }
     }

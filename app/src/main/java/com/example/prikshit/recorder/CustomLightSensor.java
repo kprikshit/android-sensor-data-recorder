@@ -24,7 +24,7 @@ public class CustomLightSensor implements SensorEventListener {
         lightSensorPresent = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null;
         if(lightSensorPresent) {
             Sensor light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, light, RecordingMode.getCurrentMode());
         }
     }
 
