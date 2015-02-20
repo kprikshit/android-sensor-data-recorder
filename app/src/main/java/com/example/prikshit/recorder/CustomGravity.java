@@ -7,10 +7,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 /**
+ * Created on: 01-02-2015 by
  * Parmeet Singh
- * <sparmeet@iitrpr.ac.in>
+ * sparmeet@iitrpr.ac.in
  * CSE, IIT Ropar
- * Created on: 01-02-2015
  *
  * A java class implemented as a separate listener to gravity only.
  */
@@ -26,7 +26,7 @@ public class CustomGravity implements SensorEventListener {
         if(gravityPresent) {
             lastReading = new float[3];
             Sensor gravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-            sensorManager.registerListener(this, gravity, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, gravity, RecordingMode.getCurrentMode());
             gravityData = new StringBuilder();
         }
     }

@@ -9,6 +9,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.opengl.Matrix;
 import android.os.Environment;
 import android.os.Handler;
@@ -30,11 +31,11 @@ import java.util.Date;
  */
 public class DataRecorderService extends Service {
     // various intent information
-    private final String displayDataSwitchIntentName = "displayEnabled";
+    private final String displayDataSwitchIntentName = "displaySwitchChecked";
     private final String sensorDataIntentName = "sensorData";
     private final String gpsDataIntentName = "locationData";
-    private final String receivedIntentFilterName = "android.intent.action.displaySwitchInfo";
-    private final String sentIntentFilterName = "android.intent.action.MAIN";
+    private final String activityIntentId = "display-switch-state-change";
+    private final String serviceIntentId = "android.intent.action.MAIN";
 
     // information about file for storing lag between consecutive writing to file
     // WRITE LAG DISABLED
@@ -77,7 +78,7 @@ public class DataRecorderService extends Service {
     // broadcast receiver corresponding to display switch in the activity
     private BroadcastReceiver displaySwitchReceiver;
     // filter for intents sent by the display data switch in the activity
-    IntentFilter intentFilter = new IntentFilter(receivedIntentFilterName);
+    IntentFilter intentFilter = new IntentFilter(activityIntentId);
     // tag for debug messages
     private final String TAG = "DataRecorderService2";
 
@@ -106,15 +107,6 @@ public class DataRecorderService extends Service {
         return null;
     }
 
-    /**
-     * On start, initialize the current sensorEvent Listener with accelerometer as sensor
-     * Running this in a separate thread
-     *
-     * @param intent
-     * @param flags
-     * @param startId
-     * @return
-     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final Context context = getBaseContext();
@@ -151,7 +143,6 @@ public class DataRecorderService extends Service {
                         displayDataEnabled = intent.getBooleanExtra(displayDataSwitchIntentName,false);
                     }
                 };
-
                 getBaseContext().registerReceiver(displaySwitchReceiver, intentFilter);
                 Log.i(TAG,"service Thread ID: "+String.valueOf(android.os.Process.myTid()));
                 Looper.loop();
@@ -165,12 +156,13 @@ public class DataRecorderService extends Service {
 
     @Override
     public void onDestroy() {
+        System.out.println("on destroy service called");
         gyroScope.unregisterListener();
         magnetometer.unregisterListener();
         lightSensor.unregisterListener();
         gpsSensor.unregisterListener();
         sensorManager.unregisterListener(mSensorListener);
-        unregisterReceiver(displaySwitchReceiver);
+        getBaseContext().unregisterReceiver(displaySwitchReceiver);
         super.onDestroy();
     }
 
@@ -202,7 +194,7 @@ public class DataRecorderService extends Service {
             if (displayDataEnabled) {
                 String locationData = gpsSensor.getLastLocationInfo();
                 // Sending this information back to activity for displaying on view
-                Intent intent = new Intent(sentIntentFilterName);
+                Intent intent = new Intent(serviceIntentId);
                 intent.putExtra(gpsDataIntentName, locationData);
                 intent.putExtra(sensorDataIntentName, allData.toString());
                 context.sendBroadcast(intent);
@@ -239,13 +231,8 @@ public class DataRecorderService extends Service {
         }
     }
 
-    /**
-     *
-     * @param accelerometerValues
-     * @param geomagneticValues
-     */
     public void appendNormalizedAcceleration(float[] accelerometerValues, float[] geomagneticValues){
-        if(accelerometerValues != null && magnetometer.isMagnetoPresent() && !gravitySensor.isGravityPresent() ) {
+        if(accelerometerValues != null && magnetometer.isMagnetoPresent() && gravitySensor.isGravityPresent() ) {
             float[] R = new float[16];
             SensorManager.getRotationMatrix(R, new float[16], gravitySensor.getLastReading(), geomagneticValues);
             float[] relativeAcc = new float[4];
@@ -271,5 +258,9 @@ public class DataRecorderService extends Service {
             allData.append(",");
             allData.append(String.format("%.3f", accelerometerValues[2]));
         }
+    }
+
+    public static void stopActivity(){
+
     }
 }

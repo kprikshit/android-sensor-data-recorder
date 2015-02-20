@@ -1,7 +1,9 @@
 package com.example.prikshit.recorder;
 
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,6 +25,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Calendar;
+
 
 /**
  * Created on: 08-01-2015 by
@@ -35,49 +41,176 @@ import android.widget.Toast;
  */
 public class MainActivity extends ActionBarActivity {
 
-    private Toolbar toolbar;
-    private boolean isDisplayDataEnabled = false;
-    private boolean isRecordDataEnabled = false;
-    private BroadcastReceiver receiver;
-    // Intent received from service containing data to be shown
-    IntentFilter dataIntentFilter = new IntentFilter("android.intent.action.MAIN");
-    private WifiManager wifiManager;
-    private LocationManager locationManager;
-    // Class corresponding to service
+
+    private static boolean isDisplayDataEnabled = false;
+    private static boolean recordDataEnabled = false;
+    private boolean isBatterySaverEnabled = false;
+
+    // Class corresponding to Recorder service
     public final Class serviceClassName = DataRecorderService.class;
 
-    // name of variable which is stored in Bundle during onPause() of activity;
-    public final String displayDataBundleName = "displayDataSwitchState";
+    // Received Intent Properties
+    public final String serviceIntentId =  "android.intent.action.MAIN";
     // name of variables received in intent from service
     public final String sensorDataIntentName = "sensorData";
     public final String gpsDataIntentName = "locationData";
+
+    // To be sent Intent Properties
     // name of variable in intent to be sent to service for state of display Data button
-    public final String displayDataIntentName = "displayEnabled";
-    // id of intent regarding to state of displayData which is to be sent to service
-    public final String displaySwitchStateIntentId = "android.intent.action.displaySwitchInfo";
+    public final String displaySwitchIntentName = "displaySwitchChecked";
+    // intent id to be sent to service
+    public final String activityIntentId = "display-switch-state-change";
+
+    // savedInstanceState Bundle variable names etc
+    public final String displaySwitchStateBundleName = "displayDataSwitchState";
+    public final String TAG  = "MainActivity";
+
+    private Toolbar toolbar;
+    private WifiManager wifiManager;
+    private LocationManager locationManager;
+    private BroadcastReceiver dataIntentReceiver;
+    private BroadcastReceiver stateIntentReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (!isServiceRunning(UploaderService.class)){
             Intent intent = new Intent(Intent.ACTION_SYNC, null, this, UploaderService.class);
-            startService(intent);
+           // startService(intent);
         }
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
         SharedPreferences settings = getSharedPreferences("MyPrefsFile",0);
-        settings.getBoolean(displayDataBundleName, false);
+        settings.getBoolean(displaySwitchStateBundleName, false);
 
         // for checking whether wifi is on or not.
         wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+    };
 
-        /**
-         * Initially, the CardView gpsDataCard and sensorData are not displayed
-         */
+    @Override
+    public void onStart(){
+        super.onStart();
+    }
+
+    /**
+     * on Resume, value of variable displayDataEnabled will be automatically restored
+     * and register the broadcast listener
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerButtonListeners(this);
+        registerBroadcastListeners();
+
+        if(MainActivity.recordDataEnabled) {
+            if(!TmpData.isStopAlarmRunning()) {
+                // Log.d(TAG, "recording enabled and no AUTOSTOP alarm running. Starting now");
+                AlarmManagers.startAlarm(this, Constants.AUTO_STOP_RECORDING_CLASS);
+                TmpData.setStopAlarmRunning(true);
+            }
+        }
+        else{
+            if(!TmpData.isStartAlarmRunning()) {
+                // Log.d(TAG,"recording disabled and no AUTOSTART alarm running. Starting now");
+                AlarmManagers.startAlarm(this, Constants.AUTO_START_RECORDING_CLASS);
+                TmpData.setStartAlarmRunning(true);
+            }
+        }
+        broadcastDisplayInfo(isDisplayDataEnabled);
+    }
+
+    public void registerBroadcastListeners(){
+        // receiver for intent sent by service for displaying data
+        dataIntentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateSensorCard(intent.getStringExtra(sensorDataIntentName));
+                updateGPSCard(intent.getStringExtra(gpsDataIntentName));
+            }
+        };
+        this.registerReceiver(dataIntentReceiver, new IntentFilter(serviceIntentId));
+        // receiver for intents sent by Auto Start and Stop
+        stateIntentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Log.d(TAG, "received intent for ");
+                recordDataEnabled = intent.getBooleanExtra("recordingEnabled",false);
+                Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
+                recordSwitch.setChecked(recordDataEnabled);
+                if(!recordDataEnabled){
+                    Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
+                    recordSwitch.setChecked(false);
+                    isDisplayDataEnabled = false;
+                }
+            }
+        };
+        this.registerReceiver(stateIntentReceiver, new IntentFilter("auto.recording.state"));
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        broadcastDisplayInfo(false);
+        this.unregisterReceiver(this.dataIntentReceiver);
+        this.unregisterReceiver(this.stateIntentReceiver);
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        isDisplayDataEnabled = false;
+        broadcastDisplayInfo(false);
+        AlarmManagers.cancelAlarm(this, Constants.AUTO_START_RECORDING_CLASS);
+        AlarmManagers.cancelAlarm(this, Constants.AUTO_STOP_RECORDING_CLASS);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putBoolean(displaySwitchStateBundleName,isDisplayDataEnabled);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState){
+        super.onRestoreInstanceState(savedInstanceState);
+        isDisplayDataEnabled =  savedInstanceState.getBoolean(displaySwitchStateBundleName);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();//noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            Toast.makeText(this, "Wait for Next Version.", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        if (id == R.id.action_about) {
+            // about activity launch has been disabled at the moment to add necessary UI.
+            startActivity(new Intent(this, About.class));
+            overridePendingTransition(R.anim.abc_right_in, R.anim.abc_left_out);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void registerButtonListeners(final Context context){
+        // Initially, the CardView gpsDataCard and sensorData are not displayed
         final CardView sensorDataCard = (CardView) findViewById(R.id.sensorCard);
         final CardView gpsDataCard = (CardView) findViewById(R.id.gpsDataCard);
         if (!isDisplayDataEnabled) {
@@ -85,58 +218,69 @@ public class MainActivity extends ActionBarActivity {
             sensorDataCard.setVisibility(CardView.GONE);
             gpsDataCard.setVisibility(CardView.GONE);
         }
-
-        /**
-         * Switches and their Listeners
-         */
+        // Switches and their Listeners
         final Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
         final Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
         Switch batterySwitch = (Switch) findViewById(R.id.batterySwitch);
 
-        /**
-         * Before doing anything check whether the service is running or not
-         */
+        // Before doing anything check whether the service is running or not
         if (isServiceRunning(serviceClassName)) {
-            isRecordDataEnabled = true;
+            MainActivity.recordDataEnabled = true;
             recordSwitch.setChecked(true);
         }
 
-        //check whether the GPS is turned on or not here only,instead of checking in the service.
+        // check whether the GPS is turned on or not here only,instead of checking in the service.
         // after checking, start/stop service accordingly.
-        /**
-         * Record Data Switch Listener
-         */
+        // Record Data Switch Listener
         recordSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                isRecordDataEnabled = isChecked;
                 //Start the background Service
                 if (isChecked) {
                     // if GPS is enabled, only then start the service, otherwise not
                     if (isGPSEnabled) {
+                        // change the alarms accordingly
+                        if(TmpData.isStartAlarmRunning()){
+                            AlarmManagers.cancelAlarm(context, Constants.AUTO_START_RECORDING_CLASS);
+                            TmpData.setStartAlarmRunning(false);
+                        }
+                        if(!TmpData.isStopAlarmRunning()){
+                            AlarmManagers.startAlarm(context, Constants.AUTO_STOP_RECORDING_CLASS);
+                            TmpData.setStopAlarmRunning(true);
+                        }
+
                         Intent serviceIntent = new Intent(getBaseContext(), serviceClassName);
                         serviceIntent.setAction(Intent.ACTION_MAIN);
-                        Log.i("activityThread", String.valueOf(android.os.Process.myTid()));
-                        //System.out.println("service thread id: " + android.os.Process.myTid());
+                        //Log.i("activityThread", String.valueOf(android.os.Process.myTid()));
+
                         startService(serviceIntent);
                         // if display data is switched on before record data, then send a broadcast intent to service mentioning
                         // that the display data is enabled so it should start sending data
-                        broadcastDisplayInfo(isDisplayDataEnabled);
+                        broadcastDisplayInfo(true);
                     } else {
                         //show GPS settings
                         showGPSSettingsAlert();
                         // set the switched to off state
                         recordSwitch.setChecked(false);
-                        isRecordDataEnabled = false;
+                        MainActivity.recordDataEnabled = false;
                     }
                     // after all this, we ask user for WiFi permissions
                     if (!wifiManager.isWifiEnabled()) {
                         //showWiFiSettingsAlert();
                     }
                 } else {
+                    if(TmpData.isStopAlarmRunning()){
+                        AlarmManagers.cancelAlarm(context, Constants.AUTO_STOP_RECORDING_CLASS);
+                        TmpData.setStopAlarmRunning(false);
+                    }
+                    if(!TmpData.isStartAlarmRunning()){
+                        AlarmManagers.startAlarm(context, Constants.AUTO_START_RECORDING_CLASS);
+                        TmpData.setStartAlarmRunning(true);
+                    }
                     stopService(new Intent(getBaseContext(), serviceClassName));
                 }
+                MainActivity.recordDataEnabled = isChecked;
             }
         });
 
@@ -152,125 +296,32 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    //debug purposes
                     sensorDataCard.setVisibility(CardView.VISIBLE);
                     gpsDataCard.setVisibility(CardView.VISIBLE);
                 } else {
-                    // using GONE instead of INVISIBLE
-                    // stops rendering the element instead of just not showing the card
-                    // i.e. like the card was not even present there.
                     sensorDataCard.setVisibility(CardView.GONE);
                     gpsDataCard.setVisibility(CardView.GONE);
                 }
-                /**
-                 * Update variable accordingly
-                 */
+
                 isDisplayDataEnabled = isChecked;
-                broadcastDisplayInfo(isChecked);
+                broadcastDisplayInfo(isDisplayDataEnabled);
             }
         });
         /**
-        batterySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
-                    Log.i("MainActivity", "Starting battery saver now");
-                    RecordingMode.setCurrentMode(Constants.BATTERY_SAVER_RECORDING_MODE);
-                }
-                else {
-                    Log.i("MainActivity", "Fast recording now");
-                    RecordingMode.setCurrentMode(Constants.FAST_RECORDING_MODE);
-                }
-            }
+         batterySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if(isChecked) {
+        Log.i("MainActivity", "Starting battery saver now");
+        RecordingMode.setCurrentMode(Constants.BATTERY_SAVER_RECORDING_MODE);
+        }
+        else {
+        Log.i("MainActivity", "Fast recording now");
+        RecordingMode.setCurrentMode(Constants.FAST_RECORDING_MODE);
+        }
+        }
         });
-        */
-    };
-
-    @Override
-    public void onStart(){
-        super.onStart();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        broadcastDisplayInfo(false);
-        this.unregisterReceiver(this.receiver);
-    }
-
-    /**
-     * on Resume, value of variable displayDataEnabled will be automatically restored
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        if(isDisplayDataEnabled){
-            broadcastDisplayInfo(true);
-        }
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (isDisplayDataEnabled) {
-                    // get the sensor data
-                    String sensorData = intent.getStringExtra(sensorDataIntentName);
-                    // get the GPS data in format of string
-                    String locationData = intent.getStringExtra(gpsDataIntentName);
-
-                    updateSensorCard(sensorData);
-                    updateGPSCard(locationData);
-                }
-            }
-        };
-        this.registerReceiver(receiver, dataIntentFilter);
-    }
-
-    @Override
-    public void onStop(){
-        isDisplayDataEnabled = false;
-        broadcastDisplayInfo(false);
-        super.onStop();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState){
-        super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putBoolean(displayDataBundleName,isDisplayDataEnabled);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState){
-        super.onRestoreInstanceState(savedInstanceState);
-        isDisplayDataEnabled =  savedInstanceState.getBoolean(displayDataBundleName);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Toast.makeText(this, "Wait for Next Version.", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        if (id == R.id.action_about) {
-            //Toast.makeText(this, "Wait for Next Version.", Toast.LENGTH_SHORT).show();
-            // about activity launch has been disabled at the moment to add necessary UI.
-            startActivity(new Intent(this, About.class));
-            overridePendingTransition(R.anim.abc_right_in, R.anim.abc_left_out);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+         */
     }
 
     /**
@@ -282,17 +333,19 @@ public class MainActivity extends ActionBarActivity {
      * @param sensorData
      */
     public void updateSensorCard(String sensorData) {
-        TextView accelData = (TextView) findViewById(R.id.accelData);
-        TextView gyroData = (TextView) findViewById(R.id.gyroData);
-        TextView magnetoData = (TextView) findViewById(R.id.magnetoData);
-        TextView lightData = (TextView) findViewById(R.id.lightData);
-        String[] array = sensorData.split(",");
+        if(sensorData != null || sensorData != "") {
+            TextView accelData = (TextView) findViewById(R.id.accelData);
+            TextView gyroData = (TextView) findViewById(R.id.gyroData);
+            TextView magnetoData = (TextView) findViewById(R.id.magnetoData);
+            TextView lightData = (TextView) findViewById(R.id.lightData);
+            String[] array = sensorData.split(",");
 
-        // in place of 0 , there is timestamp now.
-        accelData.setText(array[1] + "," + array[2] + "," + array[3] + " m/s2");
-        gyroData.setText(array[4] + "," + array[5] + "," + array[6] + " rad/s");
-        magnetoData.setText(array[7] + "," + array[8] + "," + array[9] + " μT");
-        lightData.setText(array[10] + " lux");
+            // in place of 0 , there is timestamp now.
+            accelData.setText(array[1] + "," + array[2] + "," + array[3] + " m/s2");
+            gyroData.setText(array[4] + "," + array[5] + "," + array[6] + " rad/s");
+            magnetoData.setText(array[7] + "," + array[8] + "," + array[9] + " μT");
+            lightData.setText(array[10] + " lux");
+        }
     }
 
     /**
@@ -402,8 +455,15 @@ public class MainActivity extends ActionBarActivity {
      *@param broadcastInfo a boolean variable for broadcasting the state of DisplayData Switch to service
      */
     public void broadcastDisplayInfo(boolean broadcastInfo){
-        Intent intent = new Intent(displaySwitchStateIntentId).putExtra(displayDataIntentName, broadcastInfo);
+        Intent intent = new Intent(activityIntentId).putExtra(displaySwitchIntentName, broadcastInfo);
         getApplicationContext().sendBroadcast(intent);
     }
 
+    public static boolean isRecordDataEnabled() {
+        return recordDataEnabled;
+    }
+
+    public static void setRecordDataEnabled(boolean recordDataEnabled) {
+        MainActivity.recordDataEnabled = recordDataEnabled;
+    }
 }

@@ -5,9 +5,12 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
+
+import java.util.Calendar;
 
 /**
  * Prikshit Kumar
@@ -23,10 +26,10 @@ import com.google.android.gms.common.GooglePlayServicesClient;
         GooglePlayServicesClient.ConnectionCallbacks,
         GooglePlayServicesClient.OnConnectionFailedListener {
 
-    private Location lastLocation;
+    private static Location lastLocation;
     private LocationManager locationManager;
-    private boolean isGPSEnabled;
-    private boolean isNetworkEnabled;
+    private boolean gpsEnabled;
+    private boolean networkEnabled;
     // we are making this variable global because we don't want to allocate memory every time
     // we call the function getLastLocationInfo()
     // same thing is implemented in other listeners also
@@ -49,15 +52,15 @@ import com.google.android.gms.common.GooglePlayServicesClient;
         gpsData = new StringBuilder();
 
         //checking which location providers are enabled and which are not
-        isGPSEnabled = locationManager.isProviderEnabled(gpsLocationProvider);
-        isNetworkEnabled = locationManager.isProviderEnabled(networkLocationProvider);
+        gpsEnabled = locationManager.isProviderEnabled(gpsLocationProvider);
+        networkEnabled = locationManager.isProviderEnabled(networkLocationProvider);
 
         locationManager.requestLocationUpdates(gpsLocationProvider, 0, 0, this);
         lastLocation = locationManager.getLastKnownLocation(gpsLocationProvider);
         // if gps has not given any location, then try the network Location provider
         if(lastLocation == null){
             // first, check whether the network is enabled or not.
-            if(isNetworkEnabled){
+            if(networkEnabled){
                 lastLocation = locationManager.getLastKnownLocation(networkLocationProvider);
             }
         }
@@ -65,6 +68,7 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 
     @Override
     public void onLocationChanged(Location location) {
+        //Log.d("GPS", "location changed at "+ Calendar.getInstance().getTime());
         lastLocation = location;
     }
 
@@ -128,4 +132,30 @@ import com.google.android.gms.common.GooglePlayServicesClient;
         if(locationManager != null)
             locationManager.removeUpdates(this);
     }
+
+    public boolean isGpsEnabled() {
+        return gpsEnabled;
+    }
+
+    public void setGpsEnabled(boolean gpsEnabled) {
+        this.gpsEnabled = gpsEnabled;
+    }
+
+    public boolean isNetworkEnabled() {
+        return networkEnabled;
+    }
+
+    public void setNetworkEnabled(boolean networkEnabled) {
+        this.networkEnabled = networkEnabled;
+    }
+
+    public static Location getLastLocation(){
+        return lastLocation;
+    }
+
+    public static void setLastLocation(Location newLoc){
+        lastLocation = newLoc;
+    }
+
+
 }

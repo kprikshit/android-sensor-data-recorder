@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
 
     <application
@@ -28,11 +29,11 @@
         <activity
             android:name=".About"
             android:label="@string/title_activity_about"
-            android:parentActivityName=".MainActivity"></activity>
-
+            android:parentActivityName=".MainActivity">
+        </activity>
         <service android:name=".DataRecorderService"></service>
-        <service android:name=".UploaderService"></service>z
-        <service android:name=".Recorder2"></service>
+        <service android:name=".UploaderService"></service>
+
         <receiver android:name=".RecordingMode">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
@@ -40,6 +41,8 @@
                 <action android:name="android.intent.action.BATTERY_CHANGED"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".StopRecorderService"/>
+        <receiver android:name=".StartRecorderService"/>
     </application>
 
 </manifest>
