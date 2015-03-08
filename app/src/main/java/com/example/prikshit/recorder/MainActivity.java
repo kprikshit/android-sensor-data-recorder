@@ -40,8 +40,6 @@ import java.util.Calendar;
  * i.e. the Home Screen of the application
  */
 public class MainActivity extends ActionBarActivity {
-
-
     private static boolean isDisplayDataEnabled = false;
     private static boolean recordDataEnabled = false;
     private boolean isBatterySaverEnabled = false;
@@ -122,35 +120,6 @@ public class MainActivity extends ActionBarActivity {
         broadcastDisplayInfo(isDisplayDataEnabled);
     }
 
-    public void registerBroadcastListeners(){
-        // receiver for intent sent by service for displaying data
-        dataIntentReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                updateSensorCard(intent.getStringExtra(sensorDataIntentName));
-                updateGPSCard(intent.getStringExtra(gpsDataIntentName));
-            }
-        };
-        this.registerReceiver(dataIntentReceiver, new IntentFilter(serviceIntentId));
-        // receiver for intents sent by Auto Start and Stop
-        stateIntentReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                //Log.d(TAG, "received intent for ");
-                recordDataEnabled = intent.getBooleanExtra("recordingEnabled",false);
-                Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
-                recordSwitch.setChecked(recordDataEnabled);
-                if(!recordDataEnabled){
-                    Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
-                    recordSwitch.setChecked(false);
-                    isDisplayDataEnabled = false;
-                }
-            }
-        };
-        this.registerReceiver(stateIntentReceiver, new IntentFilter("auto.recording.state"));
-    }
-
-
     @Override
     public void onPause() {
         super.onPause();
@@ -160,17 +129,12 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    public void onStop(){
-        super.onStop();
-    }
-
-    @Override
     public void onDestroy(){
         super.onDestroy();
         isDisplayDataEnabled = false;
         broadcastDisplayInfo(false);
-        AlarmManagers.cancelAlarm(this, Constants.AUTO_START_RECORDING_CLASS);
-        AlarmManagers.cancelAlarm(this, Constants.AUTO_STOP_RECORDING_CLASS);
+        //AlarmManagers.cancelAlarm(this, Constants.AUTO_START_RECORDING_CLASS);
+        //AlarmManagers.cancelAlarm(this, Constants.AUTO_STOP_RECORDING_CLASS);
     }
 
     @Override
@@ -200,9 +164,8 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         if (id == R.id.action_about) {
-            // about activity launch has been disabled at the moment to add necessary UI.
             startActivity(new Intent(this, About.class));
-            overridePendingTransition(R.anim.abc_right_in, R.anim.abc_left_out);
+            //overridePendingTransition(R.anim.abc_right_in, R.anim.abc_left_out);
             return true;
         }
 
@@ -322,6 +285,34 @@ public class MainActivity extends ActionBarActivity {
         }
         });
          */
+    }
+
+    public void registerBroadcastListeners(){
+        // receiver for intent sent by service for displaying data
+        dataIntentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateSensorCard(intent.getStringExtra(sensorDataIntentName));
+                updateGPSCard(intent.getStringExtra(gpsDataIntentName));
+            }
+        };
+        this.registerReceiver(dataIntentReceiver, new IntentFilter(serviceIntentId));
+        // receiver for intents sent by Auto Start and Stop
+        stateIntentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Log.d(TAG, "received intent for ");
+                recordDataEnabled = intent.getBooleanExtra("recordingEnabled",false);
+                Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
+                recordSwitch.setChecked(recordDataEnabled);
+                if(!recordDataEnabled){
+                    Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
+                    recordSwitch.setChecked(false);
+                    isDisplayDataEnabled = false;
+                }
+            }
+        };
+        this.registerReceiver(stateIntentReceiver, new IntentFilter("auto.recording.state"));
     }
 
     /**
@@ -466,4 +457,15 @@ public class MainActivity extends ActionBarActivity {
     public static void setRecordDataEnabled(boolean recordDataEnabled) {
         MainActivity.recordDataEnabled = recordDataEnabled;
     }
+
+    /**
+     * This will cancel all the alarms and hence no data will be recorded
+     * @param context
+     */
+    public void cancelAllAlarms(Context context){
+        AlarmManagers.cancelAlarm(context, Constants.AUTO_STOP_RECORDING_CLASS);
+        AlarmManagers.cancelAlarm(context, Constants.AUTO_START_RECORDING_CLASS);
+        MainActivity.setRecordDataEnabled(false);
+    }
+
 }

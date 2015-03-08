@@ -124,7 +124,7 @@ import java.util.Calendar;
             return gpsData.toString();
         }
         else{
-            return "-,-,-,-,-,-,";
+            return "-,-,-,-,-,-";
         }
     }
 

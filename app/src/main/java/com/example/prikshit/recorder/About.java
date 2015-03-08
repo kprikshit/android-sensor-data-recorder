@@ -31,21 +31,15 @@ public class About extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-        /**
-         * <p>setting the custom toolbar</p>
-         */
+        // setting the custom toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
-        /**
-         * for showing back buttons to go back on previous activity
-         */
+        // for showing back buttons to go back on previous activity
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        /**
-         * setting thr recycler view
-         */
+        // setting thr recycler view
         recyclerView = (RecyclerView) findViewById(R.id.recycler1);
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
@@ -56,12 +50,10 @@ public class About extends ActionBarActivity {
     }
 
     /**
-     * <p>
-     *     Developer data which is to be shown in about activity
-     *     using a recyclerView (equivalent to listView in old APIs)
-     *     Right now, the data is hard coded,
-     *     but at later stages, the data should be taken from a separate file
-     * </p>
+     * Developer data which is to be shown in about activity
+     * using a recyclerView (equivalent to listView in old APIs)
+     * Right now, the data is hard coded,
+     * but at later stages, the data should be taken from a separate file
      * @return
      */
     public List<Information> getData() {
@@ -95,14 +87,19 @@ public class About extends ActionBarActivity {
             return true;
         }
         /**
-         * <p>
-         *     when clicked on Back button
-         *     go back to home screen
-         * </p>
+         * when clicked on Back button
+         * go back to home screen
          */
         if (id == R.id.home) {
+            overridePendingTransition(R.anim.abc_left_out,R.anim.abc_right_in);
             NavUtils.navigateUpFromSameTask(this);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        //overridePendingTransition(R.anim.slideoutleft,R.anim.slideoutleft);
     }
 }

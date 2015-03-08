@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
+import android.widget.Toast;
 
 /**
  * Battery adaptive recording mode for various sensors
@@ -31,9 +32,12 @@ public class RecordingMode extends BroadcastReceiver{
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         batteryLevel = (int)( ( (float)level /(float)scale )*100);
 
-        if( batteryLevel <= Constants.BATTERY_SAVER_LEVEL ){
+        if( batteryLevel <= Constants.BATTERY_SAVER_LEVEL && !isCharging ){
             currentMode = Constants.BATTERY_SAVER_RECORDING_MODE ;
             //Toast.makeText(context, String.format("battery level: %d", batteryLevel),Toast.LENGTH_SHORT).show();
+            // stop recording as battery level is low than defined threshold
+            Intent newIntent = new Intent("auto.recording.state").putExtra("recordingEnabled", false);
+            context.sendBroadcast(newIntent);
         }
         else {
             //Toast.makeText(context, String.format("battery level: %d", batteryLevel), Toast.LENGTH_SHORT).show();

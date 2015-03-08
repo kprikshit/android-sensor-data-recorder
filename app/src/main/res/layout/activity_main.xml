@@ -25,7 +25,8 @@
             android:layout_below="@+id/app_bar"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="2dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -33,44 +34,45 @@
 
                 <Switch
                     android:id="@+id/recordingSwitch"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_marginTop="16dp"
+                    android:layout_marginLeft="18dp"
+                    android:layout_marginRight="18dp"
                     android:layout_centerVertical="true"
                     android:height="27dp"
                     android:checked="false"
                     android:text="Record Data"
-                    android:textColor="@color/inAppTextColor"
-                    android:layout_alignRight="@+id/batterySwitch"
-                    android:layout_alignLeft="@+id/batterySwitch"/>
+                    android:textColor="@color/inAppTextColor"/>
 
                 <Switch
                     android:id="@+id/displaySwitch"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:layout_centerVertical="true"
                     android:height="27dp"
                     android:checked="false"
                     android:text="Display Data"
                     android:textColor="@color/inAppTextColor"
-                    android:layout_centerVertical="true"
                     android:layout_below="@+id/recordingSwitch"
-                    android:layout_alignRight="@+id/batterySwitch"
-                    android:layout_alignLeft="@+id/batterySwitch"/>
+                    android:layout_alignLeft="@+id/recordingSwitch"
+                    android:layout_alignRight="@+id/recordingSwitch"/>
 
                 <Switch
                     android:id="@+id/batterySwitch"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:layout_marginLeft="18dp"
+                    android:layout_centerVertical="true"
                     android:height="27dp"
                     android:checked="false"
                     android:text="Battery Saver"
                     android:textColor="@color/inAppTextColor"
-                    android:layout_centerVertical="true"
-                    android:layout_below="@+id/displaySwitch" />
+                    android:layout_below="@+id/displaySwitch"
+                    android:layout_alignLeft="@+id/displaySwitch"
+                    android:layout_alignRight="@+id/displaySwitch"/>
 
             </RelativeLayout>
         </android.support.v7.widget.CardView>
@@ -85,7 +87,8 @@
             android:layout_below="@+id/toggleCard"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
             android:elevation="2dp">
 
             <RelativeLayout
@@ -183,6 +186,7 @@
             </RelativeLayout>
         </android.support.v7.widget.CardView>
 
+        <!--For Displaying GPS related info on card-->
         <android.support.v7.widget.CardView
             android:id="@+id/gpsDataCard"
             android:layout_width="match_parent"
@@ -192,7 +196,7 @@
             android:layout_below="@+id/sensorCard"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             android:layout_marginBottom="4dp">
             <!--This line (layout_MarginBottom) should be added only to the last element in the UI only.-->
 
@@ -335,5 +339,6 @@
 
             </RelativeLayout>
         </android.support.v7.widget.CardView>
+
     </RelativeLayout>
 </ScrollView>
