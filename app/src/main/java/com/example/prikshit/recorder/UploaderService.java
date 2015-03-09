@@ -225,10 +225,10 @@ public class UploaderService extends IntentService {
                             //dialog.dismiss();
                             e.printStackTrace();
                             //Toast.makeText(UploadImageDemo.this, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            Log.e("Upload file to server Exception", "Exception : " + e.getMessage(), e);
+                            Log.e("UploaderService","Upload file to server Exception Exception : " + e.getMessage(), e);
                         }
 
-                        //delete the file after uplaoding
+                        //delete the file after uploading
                         sourceFile.delete();
                     }
                 }

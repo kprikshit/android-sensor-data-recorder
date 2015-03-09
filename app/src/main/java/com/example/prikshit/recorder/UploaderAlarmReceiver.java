@@ -30,7 +30,7 @@ public class UploaderAlarmReceiver extends BroadcastReceiver {
 
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context,UploaderAlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),repeatInterval * 1000, alarmIntent);
     }
 }

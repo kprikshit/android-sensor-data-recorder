@@ -24,10 +24,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- *
- *
  * The java class is implemented as a service which listens to various listener and
  * appends the data obtained in a file.
+ *
+ * Created by:
+ * Prikshit Kumar
+ * kprikshit@iitrpr.ac.in
  */
 public class DataRecorderService extends Service {
     // various intent information
@@ -80,13 +82,13 @@ public class DataRecorderService extends Service {
     // filter for intents sent by the display data switch in the activity
     IntentFilter intentFilter = new IntentFilter(activityIntentId);
     // tag for debug messages
-    private final String TAG = "DataRecorderService2";
+    private final String TAG = "DataRecorderService";
 //    String isBump = "false";
 
     @Override
     public void onCreate() {
         gyroScope = new CustomGyroScope(this);
-        lightSensor = new CustomLightSensor(this);
+        //lightSensor = new CustomLightSensor(this);
         magnetometer = new CustomMagnetometer(this);
         gpsSensor = new CustomGPS(this);
         gravitySensor = new CustomGravity(this);
@@ -119,7 +121,7 @@ public class DataRecorderService extends Service {
                 Looper.prepare();
                 Handler handler = new Handler();
 
-                Log.i(TAG,"Service Thread ID(Start): " + android.os.Process.myTid());
+                //Log.i(TAG,"Service Thread ID(Start): " + android.os.Process.myTid());
                 // initializing accelerometer sensor and its event listener
                 sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
                 accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -145,7 +147,7 @@ public class DataRecorderService extends Service {
                     }
                 };
                 getBaseContext().registerReceiver(displaySwitchReceiver, intentFilter);
-                Log.i(TAG,"service Thread ID: "+String.valueOf(android.os.Process.myTid()));
+                //Log.i(TAG,"service Thread ID: "+String.valueOf(android.os.Process.myTid()));
                 Looper.loop();
             }
         };
@@ -162,10 +164,9 @@ public class DataRecorderService extends Service {
 
     @Override
     public void onDestroy() {
-        System.out.println("on destroy service called");
         gyroScope.unregisterListener();
         magnetometer.unregisterListener();
-        lightSensor.unregisterListener();
+        //lightSensor.unregisterListener();
         gpsSensor.unregisterListener();
         sensorManager.unregisterListener(mSensorListener);
         getBaseContext().unregisterReceiver(displaySwitchReceiver);
@@ -196,7 +197,7 @@ public class DataRecorderService extends Service {
             allData.append(String.format("%.3f", mag[2]));
             allData.append(",");
             // light sensor data
-            allData.append(lightSensor.getLastReadingString());
+            //allData.append(lightSensor.getLastReadingString());
 
             // if display switch is enabled in the activity, only then send the intent which is to be sent to activity
             if (displayDataEnabled) {
@@ -214,11 +215,9 @@ public class DataRecorderService extends Service {
             }
 
             // appending WiFi and cellular data
-            /**
-             * DISABLED
-             * Calling wifiManager at this rate will cause the application to crash.
-             * We need to come up with some other plan to get the wifi SSIDs /their info
-             */
+            // Calling wifiManager at this rate will cause the application to crash.
+            // We need to come up with some other plan to get the wifi SSIDs /their info
+
             //allData.append(",");
             //allData.append(wifiReader.getWifiSignals());
             //System.out.println(wifiReader.getWifiSignals());
@@ -228,9 +227,9 @@ public class DataRecorderService extends Service {
 
             // write this data to file
             //Log.i(TAG, "listener on Thread: " + String.valueOf(android.os.Process.myTid()));
-          //  if(isBump=="true")System.out.println("yobump "+isBump);
+            //if(isBump=="true")System.out.println("yobump "+isBump);
             //allData.append(","+isBump);
-            //allData.append("\n");
+            allData.append("\n");
             try {
                 dataOutputStream.write(allData.toString().getBytes());
                 allData.setLength(0);
@@ -270,7 +269,4 @@ public class DataRecorderService extends Service {
         }
     }
 
-    public static void stopActivity(){
-
-    }
 }

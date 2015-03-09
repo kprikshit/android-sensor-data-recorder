@@ -162,6 +162,7 @@
                     android:textColor="@color/primaryColor" />
 
                 <!---Light-->
+                <!--
                 <TextView
                     android:id="@+id/lightName"
                     android:layout_width="match_parent"
@@ -183,6 +184,8 @@
                     android:layout_marginStart="101dp"
                     android:text="0 lux"
                     android:textColor="@color/primaryColor" />
+                -->
+
             </RelativeLayout>
         </android.support.v7.widget.CardView>
 

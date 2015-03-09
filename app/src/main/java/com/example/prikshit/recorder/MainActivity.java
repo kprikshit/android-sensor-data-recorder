@@ -78,14 +78,6 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-      /*  if (!isServiceRunning(UploaderService.class)){
-            Intent intent = new Intent(Intent.ACTION_SYNC, null, this, UploaderService.class);
-           // startService(intent);
-        }
-    */
-        UploaderAlarmReceiver alarm = new UploaderAlarmReceiver();
-        alarm.setAlarm(this,uploaderAlarmInterval);//call uploader service after 10 minutes
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.app_bar);
@@ -97,10 +89,14 @@ public class MainActivity extends ActionBarActivity {
         // for checking whether wifi is on or not.
         wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-      //  bumpButton = (Button)findViewById(R.id.bump_button);
-       // bumpButton.setVisibility(View.INVISIBLE);
-        //recorderIntent = new Intent(getBaseContext(),serviceClassName);
-/*
+
+        UploaderAlarmReceiver alarm = new UploaderAlarmReceiver();
+        alarm.setAlarm(this,uploaderAlarmInterval);//call uploader service after 10 minutes
+
+        //  bumpButton = (Button)findViewById(R.id.bump_button);
+        // bumpButton.setVisibility(View.INVISIBLE);
+        // recorderIntent = new Intent(getBaseContext(),serviceClassName);
+        /**
         bumpButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -405,14 +401,14 @@ public class MainActivity extends ActionBarActivity {
             TextView accelData = (TextView) findViewById(R.id.accelData);
             TextView gyroData = (TextView) findViewById(R.id.gyroData);
             TextView magnetoData = (TextView) findViewById(R.id.magnetoData);
-            TextView lightData = (TextView) findViewById(R.id.lightData);
+            //TextView lightData = (TextView) findViewById(R.id.lightData);
             String[] array = sensorData.split(",");
 
             // in place of 0 , there is timestamp now.
             accelData.setText(array[1] + "," + array[2] + "," + array[3] + " m/s2");
             gyroData.setText(array[4] + "," + array[5] + "," + array[6] + " rad/s");
             magnetoData.setText(array[7] + "," + array[8] + "," + array[9] + " μT");
-            lightData.setText(array[10] + " lux");
+            //lightData.setText(array[10] + " lux");
         }
     }
 

@@ -18,7 +18,7 @@ public final class Constants {
     public final static int NORMAL_RECORDING_MODE = SensorManager.SENSOR_DELAY_NORMAL;
     public final static int BATTERY_SAVER_RECORDING_MODE = SensorManager.SENSOR_DELAY_NORMAL;
     public final static String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-    public final static int BATTERY_SAVER_LEVEL = 25;
+    public final static int BATTERY_SAVER_LEVEL = 30;
     public final static Class RECORDING_CLASS = DataRecorderService.class;
 
     // interval for checking whether phone has stopped moving (in milliseconds)

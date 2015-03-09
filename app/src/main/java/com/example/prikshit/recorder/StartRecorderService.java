@@ -13,6 +13,8 @@ import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.google.android.gms.internal.ch;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Calendar;
@@ -29,6 +31,7 @@ import static java.util.Calendar.getInstance;
  */
 public class StartRecorderService extends BroadcastReceiver {
     private final String TAG = "autoStartRecording";
+    private final long checkInterval = 10*1000;
 
     @Override
     public void onReceive(Context original, Intent baseIntent) {
@@ -47,10 +50,16 @@ public class StartRecorderService extends BroadcastReceiver {
                     while(true){
                         Location currLocation = gps.getLastLocation();
                         if(currLocation != null){
+                            // check for a movement for a interval instead of checking once
+                            float avgSpeed = currLocation.getSpeed();
+                            Long lastTime = Calendar.getInstance().getTimeInMillis();
+                            while(Calendar.getInstance().getTimeInMillis() - lastTime < checkInterval){
+                                avgSpeed += gps.getLastLocation().getSpeed();
+                                avgSpeed /=2;
+                            }
                             //Log.d(TAG, "gps not null received");
-                            boolean movementDetected = checkMovementNow(currLocation, context);
+                            boolean movementDetected = checkMovementNow(avgSpeed, context);
                             if(movementDetected){
-                                //Log.d(TAG ,"movement is there");
                                 gps.unregisterListener();
                                 // no need to start the service from here
                                 // just change state of record switch and service will be started from there.
@@ -77,6 +86,8 @@ public class StartRecorderService extends BroadcastReceiver {
                 else{
                     //Log.d(TAG, "Gps is disabled");
                 }
+                // quit thread when done with everything
+                Looper.myLooper().quit();
             }
         };
         thread.start();
@@ -84,12 +95,12 @@ public class StartRecorderService extends BroadcastReceiver {
 
     /**
      * this function checks for the movement given current location
-     * @param currLocation
+     * @param avgSpeed
      * @param context
      */
-    public boolean checkMovementNow(Location currLocation, Context context){
-        Log.d(TAG, String.valueOf(currLocation.getSpeed()));
-        if(currLocation.getSpeed() > SPEED_MARGIN){
+    public boolean checkMovementNow(float avgSpeed, Context context){
+        Log.d(TAG, String.valueOf(avgSpeed));
+        if(avgSpeed > SPEED_MARGIN){
             //Log.d(TAG, "Movement Detected. Recording has been started");
 
             // stop alarm for autoStart Check
