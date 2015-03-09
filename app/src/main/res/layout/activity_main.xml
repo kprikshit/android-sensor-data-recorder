@@ -340,5 +340,22 @@
             </RelativeLayout>
         </android.support.v7.widget.CardView>
 
+        <!---
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/gpsDataCard"
+            android:layout_marginTop="4dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="4dp"
+            >
+
+            <Button
+                android:layout_width="125dp"
+                android:layout_height="75dp"
+                android:text="BUMP"
+                android:id="@+id/bump_button"/>
+        </RelativeLayout>
+-->
     </RelativeLayout>
 </ScrollView>

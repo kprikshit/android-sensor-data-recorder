@@ -20,6 +20,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -68,13 +71,21 @@ public class MainActivity extends ActionBarActivity {
     private LocationManager locationManager;
     private BroadcastReceiver dataIntentReceiver;
     private BroadcastReceiver stateIntentReceiver;
+   // Intent recorderIntent;
+  //  Button bumpButton;// = (Button)findViewById(R.id.bump_button);
+    //boolean isBump = false;
+    int uploaderAlarmInterval = 60*60;//in secs;//
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (!isServiceRunning(UploaderService.class)){
+      /*  if (!isServiceRunning(UploaderService.class)){
             Intent intent = new Intent(Intent.ACTION_SYNC, null, this, UploaderService.class);
            // startService(intent);
         }
+    */
+        UploaderAlarmReceiver alarm = new UploaderAlarmReceiver();
+        alarm.setAlarm(this,uploaderAlarmInterval);//call uploader service after 10 minutes
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.app_bar);
@@ -86,6 +97,37 @@ public class MainActivity extends ActionBarActivity {
         // for checking whether wifi is on or not.
         wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+      //  bumpButton = (Button)findViewById(R.id.bump_button);
+       // bumpButton.setVisibility(View.INVISIBLE);
+        //recorderIntent = new Intent(getBaseContext(),serviceClassName);
+/*
+        bumpButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction()==MotionEvent.ACTION_DOWN) {
+                    isBump = true;
+                    if (isServiceRunning(serviceClassName)) {
+                        System.out.println("isbump "+isBump);
+                        recorderIntent.putExtra("bump",""+isBump);
+                        startService(recorderIntent);
+                    }
+                }
+                else{
+                    isBump = false;
+                    if (isServiceRunning(serviceClassName)) {
+                        System.out.println("isbump "+isBump);
+                        recorderIntent.putExtra("bump",""+isBump);
+                        startService(recorderIntent);
+                    }
+                }
+
+                //only the first call of startservice starts the service, all other times extras will be added
+                //check this out
+                //http://stackoverflow.com/questions/15346647/android-passing-variables-to-an-already-running-service
+                return false;
+            }
+        });
+*/
     };
 
     @Override
@@ -109,6 +151,7 @@ public class MainActivity extends ActionBarActivity {
                 AlarmManagers.startAlarm(this, Constants.AUTO_STOP_RECORDING_CLASS);
                 TmpData.setStopAlarmRunning(true);
             }
+          //  bumpButton.setVisibility(View.VISIBLE);
         }
         else{
             if(!TmpData.isStartAlarmRunning()) {
@@ -116,10 +159,41 @@ public class MainActivity extends ActionBarActivity {
                 AlarmManagers.startAlarm(this, Constants.AUTO_START_RECORDING_CLASS);
                 TmpData.setStartAlarmRunning(true);
             }
+         //   bumpButton.setVisibility(View.INVISIBLE);
         }
         broadcastDisplayInfo(isDisplayDataEnabled);
     }
-
+/*
+    public void registerBroadcastListeners(){
+        // receiver for intent sent by service for displaying data
+        dataIntentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateSensorCard(intent.getStringExtra(sensorDataIntentName));
+                updateGPSCard(intent.getStringExtra(gpsDataIntentName));
+            }
+        };
+        this.registerReceiver(dataIntentReceiver, new IntentFilter(serviceIntentId));
+        // receiver for intents sent by Auto Start and Stop
+        stateIntentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Log.d(TAG, "received intent for ");
+                recordDataEnabled = intent.getBooleanExtra("recordingEnabled",false);
+                Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
+         //       bumpButton.setVisibility(View.VISIBLE);
+                recordSwitch.setChecked(recordDataEnabled);
+                if(!recordDataEnabled){
+                    Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
+           //         bumpButton.setVisibility(View.INVISIBLE);
+                    recordSwitch.setChecked(false);
+                    isDisplayDataEnabled = false;
+                }
+            }
+        };
+        this.registerReceiver(stateIntentReceiver, new IntentFilter("auto.recording.state"));
+    }
+*/
     @Override
     public void onPause() {
         super.onPause();
@@ -204,6 +278,7 @@ public class MainActivity extends ActionBarActivity {
                     // if GPS is enabled, only then start the service, otherwise not
                     if (isGPSEnabled) {
                         // change the alarms accordingly
+                      //  bumpButton.setVisibility(View.VISIBLE);
                         if(TmpData.isStartAlarmRunning()){
                             AlarmManagers.cancelAlarm(context, Constants.AUTO_START_RECORDING_CLASS);
                             TmpData.setStartAlarmRunning(false);
@@ -224,6 +299,7 @@ public class MainActivity extends ActionBarActivity {
                     } else {
                         //show GPS settings
                         showGPSSettingsAlert();
+                        //bumpButton.setVisibility(View.INVISIBLE);
                         // set the switched to off state
                         recordSwitch.setChecked(false);
                         MainActivity.recordDataEnabled = false;
@@ -233,6 +309,7 @@ public class MainActivity extends ActionBarActivity {
                         //showWiFiSettingsAlert();
                     }
                 } else {
+                   // bumpButton.setVisibility(View.INVISIBLE);
                     if(TmpData.isStopAlarmRunning()){
                         AlarmManagers.cancelAlarm(context, Constants.AUTO_STOP_RECORDING_CLASS);
                         TmpData.setStopAlarmRunning(false);

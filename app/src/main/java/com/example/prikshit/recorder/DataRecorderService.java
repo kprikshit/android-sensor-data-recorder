@@ -81,6 +81,7 @@ public class DataRecorderService extends Service {
     IntentFilter intentFilter = new IntentFilter(activityIntentId);
     // tag for debug messages
     private final String TAG = "DataRecorderService2";
+//    String isBump = "false";
 
     @Override
     public void onCreate() {
@@ -151,6 +152,11 @@ public class DataRecorderService extends Service {
         // starting a new thread
         Thread workerThread = new Thread(r);
         workerThread.start();
+  //      if(intent==null);else isBump = intent.getStringExtra("bump");
+    //    if(isBump==null){
+      //      isBump = "false";
+        //}
+
         return START_STICKY;
     }
 
@@ -169,7 +175,9 @@ public class DataRecorderService extends Service {
     public void getData(Context context, SensorEvent event){
         long currTime = System.currentTimeMillis();
         if (currTime - lastWriteTime > minUpdateDelay) {
+            allData.append("\"");
             allData.append(timeStampFormat.format(new Date()));
+            allData.append("\"");
             allData.append(",");
             // now appending accelerometer data
             //normalized accelerationData appended here
@@ -220,7 +228,9 @@ public class DataRecorderService extends Service {
 
             // write this data to file
             //Log.i(TAG, "listener on Thread: " + String.valueOf(android.os.Process.myTid()));
-            allData.append("\n");
+          //  if(isBump=="true")System.out.println("yobump "+isBump);
+            //allData.append(","+isBump);
+            //allData.append("\n");
             try {
                 dataOutputStream.write(allData.toString().getBytes());
                 allData.setLength(0);
