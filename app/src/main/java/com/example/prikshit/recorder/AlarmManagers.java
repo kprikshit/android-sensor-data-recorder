@@ -28,11 +28,9 @@ public class AlarmManagers {
         Intent intent;
         if(className == AUTO_START_RECORDING_CLASS) {
             intent = new Intent(context, AUTO_START_RECORDING_CLASS);
-            //Log.d(TAG, "start alarm initialized");
         }
         else {
             intent = new Intent(context, AUTO_STOP_RECORDING_CLASS);
-            //Log.d(TAG, "stop alarm initialized");
         }
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

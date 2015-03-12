@@ -31,46 +31,54 @@ import static java.util.Calendar.getInstance;
  */
 public class StartRecorderService extends BroadcastReceiver {
     private final String TAG = "autoStartRecording";
-    private final long checkInterval = 10*1000;
+    // duration of interval for getting the avg speed
+    private final long intervalDuration = 1*60*1000;
+    private final long gpsTimeout = 1*60*1000;
 
     @Override
     public void onReceive(Context original, Intent baseIntent) {
         final Context context = original;
         final CustomGPS gps = new CustomGPS(context);
+        //Log.d(TAG, "received alarm at "+ Calendar.getInstance().getTime());
         Thread thread = new Thread(){
             @Override
             public void run(){
                 Looper.prepare();
-                Handler handler = new Handler();
-                //Log.i(TAG,"start receiver thread id: " + android.os.Process.myTid());
-                //Log.d(TAG, "gps enabled");
+                //check whether gps is enabled or not
                 if(gps.isGpsEnabled()){
-
                     Long startTime = Calendar.getInstance().getTimeInMillis();
+                    //while either timeout occurs or we detect movement or no movement, run this loop
                     while(true){
                         Location currLocation = gps.getLastLocation();
                         if(currLocation != null){
                             // check for a movement for a interval instead of checking once
+                            // getting the avg speed for some interval of time
                             float avgSpeed = currLocation.getSpeed();
                             Long lastTime = Calendar.getInstance().getTimeInMillis();
-                            while(Calendar.getInstance().getTimeInMillis() - lastTime < checkInterval){
+                            while(Calendar.getInstance().getTimeInMillis() - lastTime < intervalDuration){
                                 avgSpeed += gps.getLastLocation().getSpeed();
                                 avgSpeed /=2;
                             }
-                            //Log.d(TAG, "gps not null received");
-                            boolean movementDetected = checkMovementNow(avgSpeed, context);
-                            if(movementDetected){
-                                gps.unregisterListener();
+                            if(avgSpeed > SPEED_MARGIN){
                                 // no need to start the service from here
                                 // just change state of record switch and service will be started from there.
+                                // sending an intent back to activity for changing the state of record switch
 
-                                // Intent serviceIntent = new Intent(context, RECORDING_CLASS);
-                                // serviceIntent.setAction(Intent.ACTION_MAIN);
-                                // context.startService(serviceIntent);
+                                // stop alarm for autoStart Check
+                                AlarmManagers.cancelAlarm(context, AUTO_START_RECORDING_CLASS);
+                                TmpData.setStartAlarmRunning(false);
+                                // start alarm for autoStop check
+                                AlarmManagers.startAlarm(context, AUTO_STOP_RECORDING_CLASS);
+                                TmpData.setStopAlarmRunning(true);
+
+                                showNotification(context);
+                                Intent newIntent = new Intent("auto.recording.state").putExtra("recordingEnabled", true);
+                                context.sendBroadcast(newIntent);
                             }
                             break;
                         }
-                        else if(Math.abs(Calendar.getInstance().getTimeInMillis() - startTime) > GPS_TIMEOUT ){
+                        // location given by gps is null i.e. GPS is not yet activated
+                        else if(Math.abs(Calendar.getInstance().getTimeInMillis() - startTime) > gpsTimeout ){
                             //Log.d(TAG, "timeout occurred");
                             break;
                         }
@@ -80,7 +88,6 @@ public class StartRecorderService extends BroadcastReceiver {
                             e.printStackTrace();
                         }
                     }
-                    //Log.d(TAG,"out of loop");
                     gps.unregisterListener();
                 }
                 else{
@@ -91,36 +98,6 @@ public class StartRecorderService extends BroadcastReceiver {
             }
         };
         thread.start();
-    }
-
-    /**
-     * this function checks for the movement given current location
-     * @param avgSpeed
-     * @param context
-     */
-    public boolean checkMovementNow(float avgSpeed, Context context){
-        Log.d(TAG, String.valueOf(avgSpeed));
-        if(avgSpeed > SPEED_MARGIN){
-            //Log.d(TAG, "Movement Detected. Recording has been started");
-
-            // stop alarm for autoStart Check
-            AlarmManagers.cancelAlarm(context, AUTO_START_RECORDING_CLASS);
-            TmpData.setStartAlarmRunning(false);
-            // start alarm for autoStop check
-            AlarmManagers.startAlarm(context, AUTO_STOP_RECORDING_CLASS);
-            TmpData.setStopAlarmRunning(true);
-
-            showNotification(context);
-
-            // sending an intent back to activity for changing the state of record switch
-            Intent newIntent = new Intent("auto.recording.state").putExtra("recordingEnabled", true);
-            context.sendBroadcast(newIntent);
-            return true;
-        }
-        else{
-            //Log.d(TAG, "No Movement from last time.");
-            return false;
-        }
     }
 
     public void showNotification(Context context){

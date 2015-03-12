@@ -195,7 +195,7 @@ public class DataRecorderService extends Service {
             allData.append(String.format("%.3f", mag[1]));
             allData.append(",");
             allData.append(String.format("%.3f", mag[2]));
-            allData.append(",");
+            //allData.append(",");
             // light sensor data
             //allData.append(lightSensor.getLastReadingString());
 

@@ -22,11 +22,11 @@ public final class Constants {
     public final static Class RECORDING_CLASS = DataRecorderService.class;
 
     // interval for checking whether phone has stopped moving (in milliseconds)
-    public final static long CHECK_STOP_INTERVAL = 1*60*1000;
+    public final static long CHECK_STOP_INTERVAL = 15*60*1000;
     // interval for checking whether phone has started moving or not
-    public final static long CHECK_START_INTERVAL = 10*60*1000;
-    public final static long GPS_TIMEOUT = 2*60*1000;
-    public final static double SPEED_MARGIN = 10.00;
+    public final static long CHECK_START_INTERVAL = 30*60*1000;
+
+    public final static double SPEED_MARGIN = 8.00;
 
     public final static Class AUTO_START_RECORDING_CLASS = StartRecorderService.class;
     public final static Class AUTO_STOP_RECORDING_CLASS = StopRecorderService.class ;

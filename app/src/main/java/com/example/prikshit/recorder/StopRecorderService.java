@@ -37,11 +37,10 @@ public class StopRecorderService extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, Intent intent) {
-        Runnable runnable = new Runnable() {
+        Thread thread1 = new Thread() {
             @Override
             public void run() {
                 Looper.prepare();
-                Handler handler = new Handler();
                 Location currLocation = CustomGPS.getLastLocation();
                 if (currLocation != null) {
                     // check for an interval of time
@@ -50,7 +49,6 @@ public class StopRecorderService extends BroadcastReceiver {
                     while( Calendar.getInstance().getTimeInMillis() - lastTime < checkDuration){
                         avgSpeed += CustomGPS.getLastLocation().getSpeed();
                         avgSpeed /=2;
-                        Log.d(TAG, String.valueOf(avgSpeed));
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
@@ -58,7 +56,7 @@ public class StopRecorderService extends BroadcastReceiver {
                         }
                     }
                     if (avgSpeed < SPEED_MARGIN) {
-
+                        //Log.d(TAG, "entered at "+ Calendar.getInstance().getTime());
                         // stop autoStop alarm
                         AlarmManagers.cancelAlarm(context, AUTO_STOP_RECORDING_CLASS);
                         TmpData.setStopAlarmRunning(false);
@@ -89,7 +87,6 @@ public class StopRecorderService extends BroadcastReceiver {
                 Looper.myLooper().quit();
             }
         };
-        Thread thread1 = new Thread(runnable);
         thread1.start();
     }
 

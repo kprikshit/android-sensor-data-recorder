@@ -71,9 +71,6 @@ public class MainActivity extends ActionBarActivity {
     private LocationManager locationManager;
     private BroadcastReceiver dataIntentReceiver;
     private BroadcastReceiver stateIntentReceiver;
-   // Intent recorderIntent;
-  //  Button bumpButton;// = (Button)findViewById(R.id.bump_button);
-    //boolean isBump = false;
     int uploaderAlarmInterval = 60*60;//in secs;//
 
     @Override
@@ -159,37 +156,7 @@ public class MainActivity extends ActionBarActivity {
         }
         broadcastDisplayInfo(isDisplayDataEnabled);
     }
-/*
-    public void registerBroadcastListeners(){
-        // receiver for intent sent by service for displaying data
-        dataIntentReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                updateSensorCard(intent.getStringExtra(sensorDataIntentName));
-                updateGPSCard(intent.getStringExtra(gpsDataIntentName));
-            }
-        };
-        this.registerReceiver(dataIntentReceiver, new IntentFilter(serviceIntentId));
-        // receiver for intents sent by Auto Start and Stop
-        stateIntentReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                //Log.d(TAG, "received intent for ");
-                recordDataEnabled = intent.getBooleanExtra("recordingEnabled",false);
-                Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
-         //       bumpButton.setVisibility(View.VISIBLE);
-                recordSwitch.setChecked(recordDataEnabled);
-                if(!recordDataEnabled){
-                    Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
-           //         bumpButton.setVisibility(View.INVISIBLE);
-                    recordSwitch.setChecked(false);
-                    isDisplayDataEnabled = false;
-                }
-            }
-        };
-        this.registerReceiver(stateIntentReceiver, new IntentFilter("auto.recording.state"));
-    }
-*/
+
     @Override
     public void onPause() {
         super.onPause();
@@ -374,7 +341,6 @@ public class MainActivity extends ActionBarActivity {
         stateIntentReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //Log.d(TAG, "received intent for ");
                 recordDataEnabled = intent.getBooleanExtra("recordingEnabled",false);
                 Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
                 recordSwitch.setChecked(recordDataEnabled);
@@ -382,6 +348,7 @@ public class MainActivity extends ActionBarActivity {
                     Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
                     recordSwitch.setChecked(false);
                     isDisplayDataEnabled = false;
+                    displaySwitch.setChecked(false);
                 }
             }
         };
@@ -539,6 +506,8 @@ public class MainActivity extends ActionBarActivity {
         AlarmManagers.cancelAlarm(context, Constants.AUTO_STOP_RECORDING_CLASS);
         AlarmManagers.cancelAlarm(context, Constants.AUTO_START_RECORDING_CLASS);
         MainActivity.setRecordDataEnabled(false);
+        TmpData.setStopAlarmRunning(false);
+        TmpData.setStartAlarmRunning(false);
     }
 
 }
