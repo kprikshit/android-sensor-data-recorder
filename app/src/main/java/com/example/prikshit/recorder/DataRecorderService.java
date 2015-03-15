@@ -85,8 +85,8 @@ public class DataRecorderService extends Service {
         gravitySensor = new CustomGravity(this);
         // wifiReader = new CustomWifi(this);
         // CELLULAR DISABLED
-        //cellularReader = new CustomCellular(this);
-        sdDirectory.mkdirs();
+        // cellularReader = new CustomCellular(this);'
+        // directory check will be handled in Activity file.
         try {
             dataOutputStream = new FileOutputStream(dataFile, true);
             // WRITE LAG DISABLED: lag information has been disabled currently.
