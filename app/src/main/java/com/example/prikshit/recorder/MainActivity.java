@@ -91,10 +91,10 @@ public class MainActivity extends ActionBarActivity {
     };
 
     @Override
-    public  void onStart(){
+    public void onStart(){
         super.onStart();
         registerButtonListeners(this);
-        registerBroadcastListeners();
+        startStopAlarms();
     }
 
 
@@ -105,7 +105,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onResume() {
         super.onResume();
-        startStopAlarms();
+        updateRecordSwitch();
+        registerBroadcastListeners();
         broadcastDisplaySwitchState(displaySwitchEnabled);
     }
 
@@ -185,6 +186,22 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * this will update the switch state based on whether the recording service is running or not
+     */
+    public void updateRecordSwitch(){
+        final Switch recordSwitch = (Switch) findViewById(R.id.recordingSwitch);
+        if (isServiceRunning(serviceClassName)) {
+            recordSwitchEnabled = true;
+            recordSwitch.setChecked(true);
+            TmpData.recordingOn = true;
+        }
+        else{
+            recordSwitch.setChecked(false);
+            TmpData.recordingOn = false;
+        }
+    }
+
     public void registerButtonListeners(final Context context){
         displayDataSwitchListener();
         // Switches and their Listeners
@@ -192,14 +209,7 @@ public class MainActivity extends ActionBarActivity {
         Switch batterySwitch = (Switch) findViewById(R.id.batterySwitch);
 
         // Before doing anything check whether the service is running or not
-        if (isServiceRunning(serviceClassName)) {
-            recordSwitchEnabled = true;
-            recordSwitch.setChecked(true);
-            TmpData.recordingOn = true;
-        }
-        else{
-            TmpData.recordingOn = false;
-        }
+        updateRecordSwitch();
         // check whether the GPS is turned on or not here only,instead of checking in the service.
         // after checking, start/stop service accordingly.
         // Record Data Switch Listener
