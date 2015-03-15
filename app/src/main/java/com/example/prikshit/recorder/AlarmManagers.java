@@ -40,11 +40,13 @@ public class AlarmManagers {
         long firstStartTime  = Calendar.getInstance().getTimeInMillis();
 
         if(className == AUTO_START_RECORDING_CLASS) {
+            Logger.d(TAG, "start request for AutoStart. Freq "+ CHECK_START_INTERVAL/1000);
             alarmManager.setRepeating(AlarmManager.RTC, firstStartTime + CHECK_START_INTERVAL, CHECK_START_INTERVAL, pendingIntent);
         }
-        else
+        else {
+            Logger.d(TAG, "start request for AutoStop. Freq " + CHECK_STOP_INTERVAL / 1000);
             alarmManager.setRepeating(AlarmManager.RTC, firstStartTime + CHECK_STOP_INTERVAL, CHECK_STOP_INTERVAL, pendingIntent);
-
+        }
     }
 
     /**
@@ -68,6 +70,7 @@ public class AlarmManagers {
     }
 
     public static void cancelAlarm(Context context, Class className) {
+        Logger.d(TAG,"Cancel alarm request received for "+ className);
         Intent intent = new Intent(context, className);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

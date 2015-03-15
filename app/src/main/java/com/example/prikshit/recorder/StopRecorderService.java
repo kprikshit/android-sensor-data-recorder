@@ -1,25 +1,21 @@
 package com.example.prikshit.recorder;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
-import android.os.Handler;
-import android.os.HandlerThread;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Looper;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
-import android.widget.Toast;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+
 import java.util.Calendar;
 
 import static com.example.prikshit.recorder.Constants.*;
-import static java.util.Calendar.*;
 
 /**
  * This class basically checks for movement after the recording is switched on.
@@ -33,16 +29,19 @@ import static java.util.Calendar.*;
  */
 public class StopRecorderService extends BroadcastReceiver {
     private final String TAG = "autoStopRecording";
-    private final long checkDuration = 20*1000;
+    private final long checkDuration = 10*1000;
 
     @Override
     public void onReceive(final Context context, Intent intent) {
+        Logger.i(TAG, "AUTOSTOP alarm receive triggered");
         Thread thread1 = new Thread() {
             @Override
             public void run() {
                 Looper.prepare();
+                Logger.d(TAG, "GPS location updates requested ");
                 Location currLocation = CustomGPS.getLastLocation();
                 if (currLocation != null) {
+                    Logger.d(TAG, "last not null location received");
                     // check for an interval of time
                     float avgSpeed = currLocation.getSpeed();
                     Long lastTime = Calendar.getInstance().getTimeInMillis();
@@ -52,17 +51,16 @@ public class StopRecorderService extends BroadcastReceiver {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
-                            Log.d(TAG, "Error in sleeping thread used for checking speed");
+                            Logger.d(TAG, "Error in sleeping thread used for checking speed");
                         }
                     }
-                    if (avgSpeed < SPEED_MARGIN) {
-                        //Log.d(TAG, "entered at "+ Calendar.getInstance().getTime());
+                    Logger.d(TAG,"avg speed is "+ avgSpeed);
+                    if (avgSpeed < SPEED_THRESHOLD) {
+                        Logger.d(TAG, "Avg speed is less than defined threshold");
                         // stop autoStop alarm
+                        Logger.d(TAG, "cancelling AutoStop alarm");
                         AlarmManagers.cancelAlarm(context, AUTO_STOP_RECORDING_CLASS);
                         TmpData.setStopAlarmRunning(false);
-                        // start autoStart Alarm
-                        AlarmManagers.startAlarm(context, AUTO_START_RECORDING_CLASS);
-                        TmpData.setStartAlarmRunning(true);
 
                         //Log.d(TAG, "stopping now at " + getInstance().getTime());
                         // no need to stop service from here
@@ -70,20 +68,30 @@ public class StopRecorderService extends BroadcastReceiver {
                         //context.stopService(new Intent(context, Constants.RECORDING_CLASS));
                         // set the last location as null after the service has stopped.
                         CustomGPS.setLastLocation(null);
-
-                        // sending a broadcast intent back to activity
+                        if(Constants.NOTIFICATION_ENABLED) {
+                            showNotification(context);
+                        }
+                        // stop the service and set the TmpData.recordindOn variable as false;
+                        context.stopService(new Intent(context, Constants.RECORDING_CLASS));
+                        TmpData.recordingOn = false;
+                        Logger.i(TAG, "sending recording state back to main activity as "+ false);
                         Intent newIntent = new Intent("auto.recording.state").putExtra("recordingEnabled", false);
                         context.sendBroadcast(newIntent);
 
-                        showNotification(context);
+                        // start autoStart Alarm
+                        Logger.d(TAG,"starting AutoStart alarm");
+                        AlarmManagers.startAlarm(context, AUTO_START_RECORDING_CLASS);
+                        TmpData.setStartAlarmRunning(true);
+
                     } else {
-                        //Log.d(TAG, "device is moving. No need to stop");
+                        Logger.i(TAG, "Device is moving. No need to stop");
                     }
                 }
                 else {
-                    //Log.d(TAG, "GPS not yet activated");
+                    Logger.d(TAG, "GPS not yet activated");
                 }
                 // quit the thread when done
+                Logger.i(TAG, "quitting AutoStop\n\n");
                 Looper.myLooper().quit();
             }
         };
@@ -92,11 +100,14 @@ public class StopRecorderService extends BroadcastReceiver {
 
 
     public void showNotification(Context context) {
+        Logger.i(TAG, "showing notification for stop recording");
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle("Recording Disabled")
                 .setContentText("No Movement Detected. Recording Stopped");
+        Uri notSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(notSound);
         notificationManager.notify(1, builder.build());
     }
 

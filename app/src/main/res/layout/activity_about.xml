@@ -28,8 +28,39 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/app_bar"
         android:layout_gravity="center"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        card_view:cardCornerRadius="4dp"></android.support.v7.widget.CardView>
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        card_view:cardCornerRadius="4dp">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/versionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Version"
+                android:layout_marginTop="2dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:textStyle="bold"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                />
+
+            <TextView
+                android:id="@+id/versionCode"
+                android:layout_below="@id/versionText"
+                android:layout_marginTop="4dp"
+                android:layout_marginLeft="4dp"
+                android:text="@string/app_versioncode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/versionText"
+                android:layout_alignRight="@+id/versionText"
+                />
+        </RelativeLayout>
+        </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler1"
@@ -39,4 +70,5 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/card2"
         android:layout_marginTop="23dp" />
+
 </RelativeLayout>

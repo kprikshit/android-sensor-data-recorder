@@ -26,7 +26,6 @@ public class UploaderAlarmReceiver extends BroadcastReceiver {
     public void setAlarm(Context context,int repeatInterval)
     {
         //start the UploaderService class at regular intervals through an intent on this class itself
-        System.out.println("ser alarm");
 
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context,UploaderAlarmReceiver.class);

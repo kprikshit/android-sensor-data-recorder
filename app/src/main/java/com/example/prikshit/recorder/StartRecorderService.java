@@ -1,26 +1,17 @@
 package com.example.prikshit.recorder;
 
-import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
-import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.google.android.gms.internal.ch;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.Calendar;
 
 import static com.example.prikshit.recorder.Constants.*;
-import static java.util.Calendar.SECOND;
 import static java.util.Calendar.getInstance;
 
 /**
@@ -39,7 +30,7 @@ public class StartRecorderService extends BroadcastReceiver {
     public void onReceive(Context original, Intent baseIntent) {
         final Context context = original;
         final CustomGPS gps = new CustomGPS(context);
-        //Log.d(TAG, "received alarm at "+ Calendar.getInstance().getTime());
+        Logger.i(TAG, "AUTOSTART alarm receive triggered");
         Thread thread = new Thread(){
             @Override
             public void run(){
@@ -47,10 +38,12 @@ public class StartRecorderService extends BroadcastReceiver {
                 //check whether gps is enabled or not
                 if(gps.isGpsEnabled()){
                     Long startTime = Calendar.getInstance().getTimeInMillis();
+                    Log.d(TAG, "GPS location updates requested ");
                     //while either timeout occurs or we detect movement or no movement, run this loop
                     while(true){
                         Location currLocation = gps.getLastLocation();
                         if(currLocation != null){
+                            Log.d(TAG, "last not null location received");
                             // check for a movement for a interval instead of checking once
                             // getting the avg speed for some interval of time
                             float avgSpeed = currLocation.getSpeed();
@@ -59,27 +52,38 @@ public class StartRecorderService extends BroadcastReceiver {
                                 avgSpeed += gps.getLastLocation().getSpeed();
                                 avgSpeed /=2;
                             }
-                            if(avgSpeed > SPEED_MARGIN){
+                            Logger.d(TAG,"avg speed is "+ avgSpeed);
+                            if(avgSpeed > SPEED_THRESHOLD){
                                 // no need to start the service from here
                                 // just change state of record switch and service will be started from there.
                                 // sending an intent back to activity for changing the state of record switch
 
                                 // stop alarm for autoStart Check
+                                Logger.d(TAG, "Avg peed is more than defined threshold");
+                                Logger.d(TAG, "cancelling auto start alarm");
                                 AlarmManagers.cancelAlarm(context, AUTO_START_RECORDING_CLASS);
                                 TmpData.setStartAlarmRunning(false);
-                                // start alarm for autoStop check
-                                AlarmManagers.startAlarm(context, AUTO_STOP_RECORDING_CLASS);
-                                TmpData.setStopAlarmRunning(true);
 
-                                showNotification(context);
+                                if(Constants.NOTIFICATION_ENABLED) {
+                                    showNotification(context);
+                                }
+                                // start Service
+                                context.startService(new Intent(context, Constants.RECORDING_CLASS));
+                                TmpData.recordingOn = true;
+                                Logger.i(TAG, "sending recording state back to main activity as " + true);
                                 Intent newIntent = new Intent("auto.recording.state").putExtra("recordingEnabled", true);
                                 context.sendBroadcast(newIntent);
+
+                                // start alarm for autoStop check
+                                Logger.d(TAG, "starting auto stop alarm");
+                                AlarmManagers.startAlarm(context, AUTO_STOP_RECORDING_CLASS);
+                                TmpData.setStopAlarmRunning(true);
                             }
                             break;
                         }
                         // location given by gps is null i.e. GPS is not yet activated
                         else if(Math.abs(Calendar.getInstance().getTimeInMillis() - startTime) > gpsTimeout ){
-                            //Log.d(TAG, "timeout occurred");
+                            Logger.i(TAG, "GPS timeout occurred");
                             break;
                         }
                         try {
@@ -91,9 +95,10 @@ public class StartRecorderService extends BroadcastReceiver {
                     gps.unregisterListener();
                 }
                 else{
-                    //Log.d(TAG, "Gps is disabled");
+                    Logger.i(TAG, "GPS is disabled");
                 }
                 // quit thread when done with everything
+                Logger.i(TAG,"Quitting onReceive AutoStart\n\n");
                 Looper.myLooper().quit();
             }
         };
@@ -101,6 +106,7 @@ public class StartRecorderService extends BroadcastReceiver {
     }
 
     public void showNotification(Context context){
+        Logger.i(TAG, "showing notification for start recording");
         NotificationManager notificationManager  = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)

@@ -10,17 +10,9 @@ import android.location.Location;
  * CSE, IIT Ropar
  */
 public class TmpData {
-    public static boolean recordEnabled;
     public static boolean startAlarmRunning = false;
     public static boolean stopAlarmRunning = false;
-
-    public static boolean isRecordEnabled() {
-        return recordEnabled;
-    }
-
-    public static void setRecordEnabled(boolean recordEnabled) {
-        TmpData.recordEnabled = recordEnabled;
-    }
+    public static boolean recordingOn = true;
 
     public static boolean isStopAlarmRunning() {
         return stopAlarmRunning;
