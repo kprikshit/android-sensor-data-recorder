@@ -77,4 +77,15 @@ public class AlarmManagers {
         alarmManager.cancel(pendingIntent);
     }
 
+    /**
+     * this will start the alarm manager for uploader service class
+     * @param context
+     */
+    public static void startUploaderAlarm(Context context){
+        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, UploaderAlarmReceiver.class);
+        PendingIntent uploaderPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis()+ Constants.UPLOADER_INTERVAL, UPLOADER_INTERVAL, uploaderPendingIntent);
+    }
+
 }

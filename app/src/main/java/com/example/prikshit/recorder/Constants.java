@@ -10,7 +10,7 @@ import android.hardware.SensorManager;
  */
 public final class Constants {
     //App related information
-    public final static String NAME = "Data Recorder";
+    public final static String APP_NAME = "Data Recorder";
     public final static String DIRECTORY = "/Data_Recorder";
     public final static String DATA_FILE_NAME = "sensorData.csv";
 
@@ -37,11 +37,13 @@ public final class Constants {
 
     // Server related information
     public static String SERVER_ADDRESS = "10.1.201.41";
-
+    public static int MIN_UPLOAD_SIZE_LIMIT = 100*1024*1024;
+    public static Class UPLOADER_CLASS = UploaderService.class;
+    public static long UPLOADER_INTERVAL = 60*60*1000; // in milliseconds
 
     // Notification related info
     public static boolean NOTIFICATION_ENABLED = true;
 
-    // Log File related infor
+    // Log File related info
     public static String LOGFILE_NAME  = "log.txt";
 }

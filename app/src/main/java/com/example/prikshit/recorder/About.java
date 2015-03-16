@@ -1,5 +1,6 @@
 package com.example.prikshit.recorder;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
@@ -8,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,14 @@ public class About extends ActionBarActivity {
 
         adapter = new MyAdapter(getData());
         recyclerView.setAdapter(adapter);
+        TextView textView = (TextView) findViewById(R.id.versionCode);
+        String version = "2.1";
+        try {
+            version = getPackageManager().getPackageInfo(getPackageName(),0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        textView.setText(version);
     }
 
     /**

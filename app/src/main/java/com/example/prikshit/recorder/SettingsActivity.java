@@ -44,9 +44,11 @@ import static com.example.prikshit.recorder.Constants.BATTERY_SAVER_LEVEL;
 import static com.example.prikshit.recorder.Constants.CHECK_START_INTERVAL;
 import static com.example.prikshit.recorder.Constants.CHECK_STOP_INTERVAL;
 import static com.example.prikshit.recorder.Constants.LOGGING_ENABLED;
+import static com.example.prikshit.recorder.Constants.MIN_UPLOAD_SIZE_LIMIT;
 import static com.example.prikshit.recorder.Constants.NOTIFICATION_ENABLED;
 import static com.example.prikshit.recorder.Constants.SERVER_ADDRESS;
 import static com.example.prikshit.recorder.Constants.SPEED_THRESHOLD;
+import static com.example.prikshit.recorder.Constants.UPLOADER_INTERVAL;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -156,16 +158,15 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
         if (!isSimplePreferences(this)) {
             return;
         }
-
         // Add preferences from general xml file.
         addPreferencesFromResource(R.xml.pref_general);
+
         // listener for resetLogFile Button
-        final Preference resetLogButton = (Preference) findPreference("resetLogButton");
+        final Preference resetLogButton = findPreference("resetLogButton");
         if (resetLogButton != null) {
             resetLogButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    //resetLogButton.getDialog().cancel();
                     //Reset the log File here.
                     File sdDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + Constants.DIRECTORY);
                     File logFile = new File(sdDirectory, Constants.LOGFILE_NAME);
@@ -186,28 +187,18 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
             });
         }
 
-        /*
-        // Add 'notifications' preferences, and a corresponding header.
-        PreferenceCategory fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_notifications);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_notification);
-
-        // Add 'data and sync' preferences, and a corresponding header.
-        fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_data_sync);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_data_sync);
-        */
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("serverAddress"));
-        bindPreferenceSummaryToValue(findPreference("upload_frequency"));
         bindPreferenceSummaryToValue(findPreference("checkStopInterval"));
         bindPreferenceSummaryToValue(findPreference("checkStartInterval"));
         bindPreferenceSummaryToValue(findPreference("speedThreshold"));
+        bindPreferenceSummaryToValue(findPreference("lowBatteryLevel"));
+
+        bindPreferenceSummaryToValue(findPreference("serverAddress"));
+        bindPreferenceSummaryToValue(findPreference("upload_frequency"));
+        bindPreferenceSummaryToValue(findPreference("min_upload_file_size"));
     }
 
     /**
@@ -277,15 +268,6 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
             // no need to do anything here also, as this is checked again and again
         }
 
-        else if(key.equals("serverAddress")){
-            String value = sharedPreferences.getString(key, "10.1.201.41");
-            if(value.isEmpty()){
-                value = "10.1.201.41";
-            }
-            SERVER_ADDRESS = value;
-            Log.i(TAG, key + " changed to "+ SERVER_ADDRESS);
-            // update the server Address variable
-        }
         else if(key.equals("notifications_auto_start_stop")){
             NOTIFICATION_ENABLED = sharedPreferences.getBoolean(key,false);
             Log.i(TAG, key + " changed to "+ NOTIFICATION_ENABLED);
@@ -298,6 +280,44 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
             }
             else {
                 BATTERY_SAVER_LEVEL = Integer.parseInt(value);
+            }
+        }
+
+        else if(key.equals("serverAddress")){
+            String value = sharedPreferences.getString(key, "10.1.201.41");
+            if(value.isEmpty()){
+                value = "10.1.201.41";
+            }
+            SERVER_ADDRESS = value;
+            Log.i(TAG, key + " changed to "+ SERVER_ADDRESS);
+            // update the server Address variable
+        }
+
+        else if (key.equals("upload_frequency")){
+            String value = sharedPreferences.getString(key,"60");
+            if(!value.isEmpty()){
+                if(Integer.parseInt(value)==0){
+                    //do nothing here
+                }
+                else{
+                    System.out.println("freq changed");
+                    UPLOADER_INTERVAL = 60*1000*Integer.parseInt(value);
+                    System.out.println("new freq "+ UPLOADER_INTERVAL);
+                    AlarmManagers.startUploaderAlarm(context);
+                }
+            }
+        }
+
+        else if(key.equals("min_upload_file_size")){
+            String value = sharedPreferences.getString(key,"100");
+            if(!value.isEmpty()){
+                if(Integer.parseInt(value)==0){
+                    // do nothing here
+                }
+                else{
+                    //upload the constant variable for SIZE LIMIT
+                    MIN_UPLOAD_SIZE_LIMIT = Integer.parseInt(value);
+                }
             }
         }
 
@@ -358,35 +378,39 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                                 ? listPreference.getEntries()[index]
                                 : null);
 
-            } else if (preference instanceof RingtonePreference) {
-                // For ringtone preferences, look up the correct display value
-                // using RingtoneManager.
-                if (TextUtils.isEmpty(stringValue)) {
-                    // Empty values correspond to 'silent' (no ringtone).
-                    preference.setSummary(R.string.pref_ringtone_silent);
-
-                } else {
-                    Ringtone ringtone = RingtoneManager.getRingtone(
-                            preference.getContext(), Uri.parse(stringValue));
-
-                    if (ringtone == null) {
-                        // Clear the summary if there was a lookup error.
-                        preference.setSummary(null);
-                    } else {
-                        // Set the summary to reflect the new ringtone display
-                        // name.
-                        String name = ringtone.getTitle(preference.getContext());
-                        preference.setSummary(name);
-                    }
-                }
-
-            } else {
+            }
+            else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
                 preference.setSummary(stringValue);
             }
             return true;
         }
+
+        /**
+         * Binding notification preference to summary not of any use in our app
+         * else if (preference instanceof RingtonePreference) {
+         // For ringtone preferences, look up the correct display value
+         // using RingtoneManager.
+         if (TextUtils.isEmpty(stringValue)) {
+         // Empty values correspond to 'silent' (no ringtone).
+         preference.setSummary(R.string.pref_ringtone_silent);
+
+         } else {
+         Ringtone ringtone = RingtoneManager.getRingtone(
+         preference.getContext(), Uri.parse(stringValue));
+
+         if (ringtone == null) {
+         // Clear the summary if there was a lookup error.
+         preference.setSummary(null);
+         } else {
+         // Set the summary to reflect the new ringtone display
+         // name.
+         String name = ringtone.getTitle(preference.getContext());
+         preference.setSummary(name);
+         }
+         }
+         */
     };
 
     /**
@@ -427,46 +451,14 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("example_text"));
-            bindPreferenceSummaryToValue(findPreference("example_list"));
-        }
-    }
+            bindPreferenceSummaryToValue(findPreference("checkStopInterval"));
+            bindPreferenceSummaryToValue(findPreference("checkStartInterval"));
+            bindPreferenceSummaryToValue(findPreference("speedThreshold"));
+            bindPreferenceSummaryToValue(findPreference("lowBatteryLevel"));
 
-    /**
-     * This fragment shows notification preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class NotificationPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_notification);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
-        }
-    }
-
-    /**
-     * This fragment shows data and sync preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class DataSyncPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_data_sync);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+            bindPreferenceSummaryToValue(findPreference("serverAddress"));
+            bindPreferenceSummaryToValue(findPreference("upload_frequency"));
+            bindPreferenceSummaryToValue(findPreference("min_upload_file_size"));
         }
     }
 

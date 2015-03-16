@@ -10,26 +10,18 @@ import android.os.SystemClock;
 import android.widget.Toast;
 
 /**
+ * this receives the alarm created for the uploader service and starts that service
+ *
  * Created by Pankaj on 2/8/2015.
  */
 public class UploaderAlarmReceiver extends BroadcastReceiver {
+    private static String TAG = "uploaderAlarmReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        //start the UploaderService class
-        System.out.println("receive");
-
-        context.startService(new Intent(context,UploaderService.class));
+        System.out.println("uploader alarm received");
+        //start the UploaderService class on receiving the alarm
+        context.startService(new Intent(context, Constants.UPLOADER_CLASS));
     }
 
-    //
-    public void setAlarm(Context context,int repeatInterval)
-    {
-        //start the UploaderService class at regular intervals through an intent on this class itself
-
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(context,UploaderAlarmReceiver.class);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),repeatInterval * 1000, alarmIntent);
-    }
 }

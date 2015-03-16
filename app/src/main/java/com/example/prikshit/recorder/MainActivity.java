@@ -7,11 +7,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.CardView;
@@ -23,6 +24,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.File;
+
+import static com.example.prikshit.recorder.Constants.*;
 
 
 /**
@@ -83,10 +86,7 @@ public class MainActivity extends ActionBarActivity {
         // for checking whether wifi is on or not.
         wifiManager = (WifiManager) this.getSystemService(this.WIFI_SERVICE);
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-        UploaderAlarmReceiver alarm = new UploaderAlarmReceiver();
-        alarm.setAlarm(this,uploaderAlarmInterval);//call uploader service after 10 minutes
-
+        updateConstants();
         Logger.i(TAG,"MainActivity created");
     };
 
@@ -114,6 +114,8 @@ public class MainActivity extends ActionBarActivity {
      * Start/ Stop alarm for automatic recording
      */
     public void startStopAlarms(){
+        // start uploader alarm
+        AlarmManagers.startUploaderAlarm(this);
         // low probability of this case happening
         // Case: When recording is running but auto stop alarm is not running
         if(recordSwitchEnabled) {
@@ -504,6 +506,27 @@ public class MainActivity extends ActionBarActivity {
         recordSwitchEnabled = false;
         TmpData.setStopAlarmRunning(false);
         TmpData.setStartAlarmRunning(false);
+    }
+
+    /**
+     * update constants based on values stored in shared preferences
+     */
+    public void updateConstants(){
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(this);
+
+        BATTERY_SAVER_LEVEL = Integer.parseInt(sharedPreferences.getString("lowBatteryLevel","30"));
+        CHECK_START_INTERVAL = 60*1000*(Integer.parseInt(sharedPreferences.getString("checkStartInterval","60")));
+        CHECK_STOP_INTERVAL = 60*1000*(Integer.parseInt(sharedPreferences.getString("checkStopInterval","30")));
+        SPEED_THRESHOLD = (Float.parseFloat(sharedPreferences.getString("speedThreshold", "8.0f")));
+
+        NOTIFICATION_ENABLED = sharedPreferences.getBoolean("notifications_auto_start_stop",false);
+        LOGGING_ENABLED = sharedPreferences.getBoolean("loggingEnabled",false);
+
+        SERVER_ADDRESS = sharedPreferences.getString("serverAddress","10.1.201.41");
+        UPLOADER_INTERVAL = 60*1000*Integer.parseInt(sharedPreferences.getString("upload_frequency","60"));
+        MIN_UPLOAD_SIZE_LIMIT = 1024*1024*(Integer.parseInt(sharedPreferences.getString("min_upload_file_size","100")));
+
     }
 
 }

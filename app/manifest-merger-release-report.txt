@@ -14,30 +14,26 @@ ADDED from AndroidManifest.xml:2:1
 		INJECTED from AndroidManifest.xml:0:0
 		INJECTED from AndroidManifest.xml:0:0
 uses-permission#android.permission.ACCESS_FINE_LOCATION
-ADDED from AndroidManifest.xml:5:5
-	android:name
-		ADDED from AndroidManifest.xml:5:22
-uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
 ADDED from AndroidManifest.xml:6:5
 	android:name
 		ADDED from AndroidManifest.xml:6:22
-uses-permission#android.permission.READ_EXTERNAL_STORAGE
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
 ADDED from AndroidManifest.xml:7:5
 	android:name
 		ADDED from AndroidManifest.xml:7:22
-uses-permission#android.permission.READ_PHONE_STATE
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
 ADDED from AndroidManifest.xml:8:5
 	android:name
 		ADDED from AndroidManifest.xml:8:22
-uses-permission#android.permission.ACCESS_WIFI_STATE
+uses-permission#android.permission.INTERNET
 ADDED from AndroidManifest.xml:9:5
 	android:name
 		ADDED from AndroidManifest.xml:9:22
-uses-permission#android.permission.CHANGE_WIFI_STATE
+uses-permission#android.permission.ACCESS_WIFI_STATE
 ADDED from AndroidManifest.xml:10:5
 	android:name
 		ADDED from AndroidManifest.xml:10:22
-uses-permission#android.permission.INTERNET
+uses-permission#android.permission.CHANGE_WIFI_STATE
 ADDED from AndroidManifest.xml:11:5
 	android:name
 		ADDED from AndroidManifest.xml:11:22
@@ -45,10 +41,14 @@ uses-permission#android.permission.ACCESS_NETWORK_STATE
 ADDED from AndroidManifest.xml:12:5
 	android:name
 		ADDED from AndroidManifest.xml:12:22
-uses-permission#android.permission.WAKE_LOCK
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
 ADDED from AndroidManifest.xml:13:5
 	android:name
 		ADDED from AndroidManifest.xml:13:22
+uses-permission#android.permission.WAKE_LOCK
+ADDED from AndroidManifest.xml:14:5
+	android:name
+		ADDED from AndroidManifest.xml:14:22
 application
 ADDED from AndroidManifest.xml:16:5
 MERGED from com.android.support:appcompat-v7:21.0.3:16:5
@@ -57,6 +57,7 @@ MERGED from com.android.support:recyclerview-v7:21.0.3:17:5
 MERGED from com.android.support:support-v4:21.0.3:16:5
 MERGED from com.android.support:cardview-v7:21.0.3:16:5
 MERGED from com.google.android.gms:play-services:6.5.87:20:5
+MERGED from com.android.support:support-v4:21.0.3:16:5
 MERGED from com.android.support:support-v4:21.0.3:16:5
 	android:label
 		ADDED from AndroidManifest.xml:19:9
@@ -79,51 +80,75 @@ ADDED from AndroidManifest.xml:25:17
 	android:name
 		ADDED from AndroidManifest.xml:25:25
 category#android.intent.category.LAUNCHER
-ADDED from AndroidManifest.xml:26:17
+ADDED from AndroidManifest.xml:27:17
 	android:name
-		ADDED from AndroidManifest.xml:26:27
+		ADDED from AndroidManifest.xml:27:27
 activity#com.example.prikshit.recorder.About
-ADDED from AndroidManifest.xml:29:9
+ADDED from AndroidManifest.xml:30:9
 	android:label
-		ADDED from AndroidManifest.xml:31:13
-	android:parentActivityName
 		ADDED from AndroidManifest.xml:32:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:33:13
 	android:name
-		ADDED from AndroidManifest.xml:30:13
+		ADDED from AndroidManifest.xml:31:13
 service#com.example.prikshit.recorder.DataRecorderService
-ADDED from AndroidManifest.xml:34:9
+ADDED from AndroidManifest.xml:36:9
 	android:name
-		ADDED from AndroidManifest.xml:34:18
+		ADDED from AndroidManifest.xml:36:18
 service#com.example.prikshit.recorder.UploaderService
-ADDED from AndroidManifest.xml:35:9
-	android:name
-		ADDED from AndroidManifest.xml:35:18
-receiver#com.example.prikshit.recorder.RecordingMode
 ADDED from AndroidManifest.xml:37:9
 	android:name
-		ADDED from AndroidManifest.xml:37:19
+		ADDED from AndroidManifest.xml:37:18
+receiver#com.example.prikshit.recorder.RecordingMode
+ADDED from AndroidManifest.xml:39:9
+	android:name
+		ADDED from AndroidManifest.xml:39:19
 intent-filter#android.intent.action.ACTION_POWER_CONNECTED+android.intent.action.ACTION_POWER_DISCONNECTED+android.intent.action.BATTERY_CHANGED
-ADDED from AndroidManifest.xml:38:13
+ADDED from AndroidManifest.xml:40:13
 action#android.intent.action.ACTION_POWER_CONNECTED
-ADDED from AndroidManifest.xml:39:17
-	android:name
-		ADDED from AndroidManifest.xml:39:25
-action#android.intent.action.ACTION_POWER_DISCONNECTED
-ADDED from AndroidManifest.xml:40:17
-	android:name
-		ADDED from AndroidManifest.xml:40:25
-action#android.intent.action.BATTERY_CHANGED
 ADDED from AndroidManifest.xml:41:17
 	android:name
 		ADDED from AndroidManifest.xml:41:25
+action#android.intent.action.ACTION_POWER_DISCONNECTED
+ADDED from AndroidManifest.xml:42:17
+	android:name
+		ADDED from AndroidManifest.xml:42:25
+action#android.intent.action.BATTERY_CHANGED
+ADDED from AndroidManifest.xml:43:17
+	android:name
+		ADDED from AndroidManifest.xml:43:25
+receiver#com.example.prikshit.recorder.UploaderAlarmReceiver
+ADDED from AndroidManifest.xml:46:9
+	android:process
+		ADDED from AndroidManifest.xml:48:13
+	android:name
+		ADDED from AndroidManifest.xml:47:13
+receiver#com.example.prikshit.recorder.UploaderBootReceiver
+ADDED from AndroidManifest.xml:49:9
+	android:enabled
+		ADDED from AndroidManifest.xml:51:13
+	android:name
+		ADDED from AndroidManifest.xml:50:13
+intent-filter#android.intent.action.BOOT_COMPLETED
+ADDED from AndroidManifest.xml:52:13
+action#android.intent.action.BOOT_COMPLETED
+ADDED from AndroidManifest.xml:53:17
+	android:name
+		ADDED from AndroidManifest.xml:53:25
 receiver#com.example.prikshit.recorder.StopRecorderService
-ADDED from AndroidManifest.xml:44:9
+ADDED from AndroidManifest.xml:56:9
 	android:name
-		ADDED from AndroidManifest.xml:44:19
+		ADDED from AndroidManifest.xml:56:19
 receiver#com.example.prikshit.recorder.StartRecorderService
-ADDED from AndroidManifest.xml:45:9
+ADDED from AndroidManifest.xml:57:9
 	android:name
-		ADDED from AndroidManifest.xml:45:19
+		ADDED from AndroidManifest.xml:57:19
+activity#com.example.prikshit.recorder.SettingsActivity
+ADDED from AndroidManifest.xml:59:9
+	android:label
+		ADDED from AndroidManifest.xml:61:13
+	android:name
+		ADDED from AndroidManifest.xml:60:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.android.support:appcompat-v7:21.0.3:15:5
@@ -132,6 +157,7 @@ MERGED from com.android.support:recyclerview-v7:21.0.3:15:5
 MERGED from com.android.support:support-v4:21.0.3:15:5
 MERGED from com.android.support:cardview-v7:21.0.3:15:5
 MERGED from com.google.android.gms:play-services:6.5.87:18:5
+MERGED from com.android.support:support-v4:21.0.3:15:5
 MERGED from com.android.support:support-v4:21.0.3:15:5
 	android:targetSdkVersion
 		INJECTED from AndroidManifest.xml:0:0
