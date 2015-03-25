@@ -25,8 +25,6 @@ import android.widget.TextView;
 
 import java.io.File;
 
-import static com.example.prikshit.recorder.Constants.*;
-
 
 /**
  * Created on: 08-01-2015 by
@@ -515,17 +513,17 @@ public class MainActivity extends ActionBarActivity {
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(this);
 
-        BATTERY_SAVER_LEVEL = Integer.parseInt(sharedPreferences.getString("lowBatteryLevel","30"));
-        CHECK_START_INTERVAL = 60*1000*(Integer.parseInt(sharedPreferences.getString("checkStartInterval","60")));
-        CHECK_STOP_INTERVAL = 60*1000*(Integer.parseInt(sharedPreferences.getString("checkStopInterval","30")));
-        SPEED_THRESHOLD = (Float.parseFloat(sharedPreferences.getString("speedThreshold", "8.0f")));
+        Constants.BATTERY_SAVER_LEVEL = Integer.parseInt(sharedPreferences.getString("lowBatteryLevel","30"));
+        Constants.CHECK_START_INTERVAL = 60*1000*(Integer.parseInt(sharedPreferences.getString("checkStartInterval","60")));
+        Constants.CHECK_STOP_INTERVAL = 60*1000*(Integer.parseInt(sharedPreferences.getString("checkStopInterval","30")));
+        Constants.SPEED_THRESHOLD = (Float.parseFloat(sharedPreferences.getString("speedThreshold", "8.0f")));
 
-        NOTIFICATION_ENABLED = sharedPreferences.getBoolean("notifications_auto_start_stop",false);
-        LOGGING_ENABLED = sharedPreferences.getBoolean("loggingEnabled",false);
+        Constants.NOTIFICATION_ENABLED = sharedPreferences.getBoolean("notifications_auto_start_stop",false);
+        Constants.LOGGING_ENABLED = sharedPreferences.getBoolean("loggingEnabled",false);
 
-        SERVER_ADDRESS = sharedPreferences.getString("serverAddress","10.1.201.41");
-        UPLOADER_INTERVAL = 60*1000*Integer.parseInt(sharedPreferences.getString("upload_frequency","60"));
-        MIN_UPLOAD_SIZE_LIMIT = 1024*1024*(Integer.parseInt(sharedPreferences.getString("min_upload_file_size","100")));
+        Constants.SERVER_ADDRESS = sharedPreferences.getString("serverAddress","10.1.201.41");
+        Constants.UPLOADER_INTERVAL = 60*1000*Integer.parseInt(sharedPreferences.getString("upload_frequency","60"));
+        Constants.MIN_UPLOAD_SIZE_LIMIT = 1024*1024*(Integer.parseInt(sharedPreferences.getString("min_upload_file_size","100")));
 
     }
 

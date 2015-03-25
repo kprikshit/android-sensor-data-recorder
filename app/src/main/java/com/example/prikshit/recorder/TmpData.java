@@ -1,8 +1,5 @@
 package com.example.prikshit.recorder;
 
-import android.content.Context;
-import android.location.Location;
-
 /**
  * Created on: 13-02-2015 by
  * Prikshit Kumar

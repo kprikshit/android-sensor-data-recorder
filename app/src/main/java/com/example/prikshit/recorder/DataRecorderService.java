@@ -178,9 +178,7 @@ public class DataRecorderService extends Service {
      * @param event
      */
     public void getData(Context context, SensorEvent event){
-        allData.append("\"");
         allData.append(timeStampFormat.format(new Date()));
-        allData.append("\"");
         allData.append(",");
         // now appending accelerometer data
         //normalized accelerationData appended here

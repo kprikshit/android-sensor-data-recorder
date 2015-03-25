@@ -1,21 +1,16 @@
 package com.example.prikshit.recorder;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.location.Location;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Looper;
-import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 
 import java.util.Calendar;
-
-import static com.example.prikshit.recorder.Constants.*;
 
 /**
  * This class basically checks for movement after the recording is switched on.
@@ -55,11 +50,11 @@ public class StopRecorderService extends BroadcastReceiver {
                         }
                     }
                     Logger.d(TAG,"avg speed is "+ avgSpeed);
-                    if (avgSpeed < SPEED_THRESHOLD) {
+                    if (avgSpeed < Constants.SPEED_THRESHOLD) {
                         Logger.d(TAG, "Avg speed is less than defined threshold");
                         // stop autoStop alarm
                         Logger.d(TAG, "cancelling AutoStop alarm");
-                        AlarmManagers.cancelAlarm(context, AUTO_STOP_RECORDING_CLASS);
+                        AlarmManagers.cancelAlarm(context, Constants.AUTO_STOP_RECORDING_CLASS);
                         TmpData.setStopAlarmRunning(false);
 
                         //Log.d(TAG, "stopping now at " + getInstance().getTime());
@@ -80,7 +75,7 @@ public class StopRecorderService extends BroadcastReceiver {
 
                         // start autoStart Alarm
                         Logger.d(TAG,"starting AutoStart alarm");
-                        AlarmManagers.startAlarm(context, AUTO_START_RECORDING_CLASS);
+                        AlarmManagers.startAlarm(context, Constants.AUTO_START_RECORDING_CLASS);
                         TmpData.setStartAlarmRunning(true);
 
                     } else {

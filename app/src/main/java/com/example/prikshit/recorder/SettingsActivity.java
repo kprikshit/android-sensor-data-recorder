@@ -1,38 +1,29 @@
 package com.example.prikshit.recorder;
 
 import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.content.SharedPreferences.*;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -187,6 +178,17 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
             });
         }
 
+        final Preference uploadNowButton = findPreference("uploadNow");
+        if(uploadNowButton != null){
+            uploadNowButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // start the uploader service now
+                    context.startService(new Intent(context, Constants.UPLOADER_CLASS));
+                    return true;
+                }
+            });
+        }
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -316,7 +318,8 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
                 }
                 else{
                     //upload the constant variable for SIZE LIMIT
-                    MIN_UPLOAD_SIZE_LIMIT = Integer.parseInt(value);
+                    MIN_UPLOAD_SIZE_LIMIT = Integer.parseInt(value)*1024*1024;
+                    Log.i(TAG, "new size limit: " + MIN_UPLOAD_SIZE_LIMIT);
                 }
             }
         }

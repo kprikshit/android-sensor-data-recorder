@@ -1,13 +1,8 @@
 package com.example.prikshit.recorder;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.PowerManager;
-import android.os.SystemClock;
-import android.widget.Toast;
 
 /**
  * this receives the alarm created for the uploader service and starts that service
