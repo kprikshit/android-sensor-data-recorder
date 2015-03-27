@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!--The distance of toolbar from the top -->
-    <dimen name="appbar_toppadding">0dp</dimen>
-</resources>

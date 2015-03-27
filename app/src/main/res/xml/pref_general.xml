@@ -112,5 +112,10 @@
             android:title="Delete Logs"
             android:key="resetLogButton"
             />
+        <Preference
+            android:title="Upload Data to Server Now"
+            android:key="uploadNow"
+            />
+
     </PreferenceCategory>
 </PreferenceScreen>

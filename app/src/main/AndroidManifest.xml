@@ -45,15 +45,9 @@
         <receiver
             android:name=".UploaderAlarmReceiver"
             android:process=":remote" />
-        <receiver
-            android:name=".UploaderBootReceiver"
-            android:enabled="false" >
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
         <receiver android:name=".StopRecorderService" />
         <receiver android:name=".StartRecorderService" />
+        <receiver android:name=".NotificationReceiver" />
 
         <activity
             android:name=".SettingsActivity"
