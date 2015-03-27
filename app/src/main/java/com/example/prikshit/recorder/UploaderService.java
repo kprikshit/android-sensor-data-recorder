@@ -197,12 +197,14 @@ public class UploaderService extends IntentService {
     public void onDestroy(){
         // this will throw an error but that will be handled by os.
         // should be checked in next version
-        conn.disconnect();
-        try {
-            dos.flush();
-            dos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(conn != null) conn.disconnect();
+        if(dos != null){
+            try {
+                dos.flush();
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         super.onDestroy();
     }
