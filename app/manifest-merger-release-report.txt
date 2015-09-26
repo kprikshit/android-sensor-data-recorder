@@ -67,7 +67,7 @@ MERGED from com.android.support:support-v4:21.0.3:16:5
 		ADDED from AndroidManifest.xml:17:9
 	android:theme
 		ADDED from AndroidManifest.xml:19:9
-activity#com.example.prikshit.recorder.MainActivity
+activity#com.prikshit.activities.MainActivity
 ADDED from AndroidManifest.xml:20:9
 	android:label
 		ADDED from AndroidManifest.xml:22:13
@@ -91,11 +91,11 @@ ADDED from AndroidManifest.xml:29:9
 		ADDED from AndroidManifest.xml:32:13
 	android:name
 		ADDED from AndroidManifest.xml:30:13
-service#com.example.prikshit.recorder.DataRecorderService
+service#com.prikshit.recorder.services.DataRecorderService
 ADDED from AndroidManifest.xml:35:9
 	android:name
 		ADDED from AndroidManifest.xml:35:18
-service#com.example.prikshit.recorder.UploaderService
+service#com.prikshit.recorder.services.UploaderService
 ADDED from AndroidManifest.xml:36:9
 	android:name
 		ADDED from AndroidManifest.xml:36:18
@@ -117,25 +117,25 @@ action#android.intent.action.BATTERY_CHANGED
 ADDED from AndroidManifest.xml:42:17
 	android:name
 		ADDED from AndroidManifest.xml:42:25
-receiver#com.example.prikshit.recorder.UploaderAlarmReceiver
+receiver#com.prikshit.services.UploaderAlarmReceiver
 ADDED from AndroidManifest.xml:45:9
 	android:process
 		ADDED from AndroidManifest.xml:47:13
 	android:name
 		ADDED from AndroidManifest.xml:46:13
-receiver#com.example.prikshit.recorder.StopRecorderService
+receiver#com.prikshit.services.StopRecorderService
 ADDED from AndroidManifest.xml:48:9
 	android:name
 		ADDED from AndroidManifest.xml:48:19
-receiver#com.example.prikshit.recorder.StartRecorderService
+receiver#com.prikshit.services.StartRecorderService
 ADDED from AndroidManifest.xml:49:9
 	android:name
 		ADDED from AndroidManifest.xml:49:19
-receiver#com.example.prikshit.recorder.NotificationReceiver
+receiver#com.prikshit.recorder.receivers.NotificationReceiver
 ADDED from AndroidManifest.xml:50:9
 	android:name
 		ADDED from AndroidManifest.xml:50:19
-activity#com.example.prikshit.recorder.SettingsActivity
+activity#com.prikshit.activities.SettingsActivity
 ADDED from AndroidManifest.xml:52:9
 	android:label
 		ADDED from AndroidManifest.xml:54:13

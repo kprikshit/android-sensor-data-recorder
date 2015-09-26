@@ -6,11 +6,11 @@ android {
     compileSdkVersion 21
     buildToolsVersion '21.1.2'
     defaultConfig {
-        applicationId 'com.cs.iitrpr.btp2015.rbds'
+        applicationId 'com.iitrpr.cse.recorder'
         minSdkVersion 14
         targetSdkVersion 21
         versionCode 2
-        versionName "2.3"
+        versionName "2.4"
     }
     buildTypes {
         release {
