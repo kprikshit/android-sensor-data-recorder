@@ -1,0 +1,364 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/baseScrollView"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/view1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+        <include
+            android:id="@+id/app_bar"
+            layout="@layout/app_bar" />
+
+        <!-- ToggleButton for Recording and Data View-->
+        <android.support.v7.widget.CardView
+            android:id="@+id/toggleCard"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/app_bar"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="2dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <Switch
+                    android:id="@+id/recordingSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginLeft="18dp"
+                    android:layout_marginRight="18dp"
+                    android:layout_centerVertical="true"
+                    android:height="27dp"
+                    android:checked="false"
+                    android:text="Record Data"
+                    android:textColor="@color/inAppTextColor"/>
+
+                <Switch
+                    android:id="@+id/displaySwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_centerVertical="true"
+                    android:height="27dp"
+                    android:checked="false"
+                    android:text="Display Data"
+                    android:textColor="@color/inAppTextColor"
+                    android:layout_below="@+id/recordingSwitch"
+                    android:layout_alignLeft="@+id/recordingSwitch"
+                    android:layout_alignRight="@+id/recordingSwitch"/>
+
+                <Switch
+                    android:id="@+id/batterySwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_centerVertical="true"
+                    android:height="27dp"
+                    android:checked="false"
+                    android:text="Battery Saver"
+                    android:textColor="@color/inAppTextColor"
+                    android:layout_below="@+id/displaySwitch"
+                    android:layout_alignLeft="@+id/displaySwitch"
+                    android:layout_alignRight="@+id/displaySwitch"/>
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <!--For Displaying Various Sensor Information on card-->
+        <android.support.v7.widget.CardView
+            android:id="@+id/sensorCard"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/toggleCard"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:elevation="2dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <!--AcceleroMeter-->
+                <TextView
+                    android:id="@+id/accelName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Accel : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/accelData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/accelName"
+                    android:layout_alignLeft="@+id/gyroData"
+                    android:layout_alignStart="@+id/gyroData"
+                    android:text="0,0,0 m/s2"
+                    android:textColor="@color/primaryColor" />
+
+                <!--GyroScope-->
+                <TextView
+                    android:id="@+id/gyroName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/accelName"
+                    android:layout_alignStart="@+id/accelName"
+                    android:layout_below="@+id/accelData"
+                    android:text="Gyro : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/gyroData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/magnetoData"
+                    android:layout_alignStart="@+id/magnetoData"
+                    android:layout_below="@+id/accelName"
+                    android:text="0,0,0 rad/s"
+                    android:textColor="@color/primaryColor" />
+
+                <!--Magnetometer-->
+                <TextView
+                    android:id="@+id/magnetoName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/gyroName"
+                    android:layout_alignStart="@+id/gyroName"
+                    android:layout_below="@+id/gyroName"
+                    android:text="Magneto : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/magnetoData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/gyroName"
+                    android:layout_alignStart="@+id/gyroName"
+                    android:layout_below="@+id/gyroData"
+                    android:layout_marginLeft="101dp"
+                    android:layout_marginStart="101dp"
+                    android:text="0,0,0 μT"
+                    android:textColor="@color/primaryColor" />
+
+                <!---Light-->
+                <!--
+                <TextView
+                    android:id="@+id/lightName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/magnetoName"
+                    android:layout_alignStart="@+id/magnetoName"
+                    android:layout_below="@+id/magnetoName"
+                    android:text="Light : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/lightData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/magnetoName"
+                    android:layout_alignStart="@+id/magnetoName"
+                    android:layout_below="@+id/magnetoData"
+                    android:layout_marginLeft="101dp"
+                    android:layout_marginStart="101dp"
+                    android:text="0 lux"
+                    android:textColor="@color/primaryColor" />
+                -->
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <!--For Displaying GPS related info on card-->
+        <android.support.v7.widget.CardView
+            android:id="@+id/gpsDataCard"
+            android:layout_width="match_parent"
+            android:layout_height="130dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/sensorCard"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="4dp">
+            <!--This line (layout_MarginBottom) should be added only to the last element in the UI only.-->
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/latitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Latitude : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/latitudeData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/latitude"
+                    android:layout_alignLeft="@+id/longitudeData"
+                    android:layout_alignStart="@+id/longitudeData"
+                    android:text="-"
+                    android:textColor="@color/primaryColor" />
+
+                <!--GyroScope-->
+                <TextView
+                    android:id="@+id/longitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/latitude"
+                    android:layout_alignStart="@+id/latitude"
+                    android:layout_below="@+id/latitudeData"
+                    android:text="Longitude : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/longitudeData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/accuracyData"
+                    android:layout_alignStart="@+id/accuracyData"
+                    android:layout_below="@+id/latitude"
+                    android:text="-"
+                    android:textColor="@color/primaryColor" />
+
+                <!--Magnetometer-->
+                <TextView
+                    android:id="@+id/accuracy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/longitude"
+                    android:layout_alignStart="@+id/longitude"
+                    android:layout_below="@+id/longitude"
+                    android:text="Accuracy : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/accuracyData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/longitude"
+                    android:layout_alignStart="@+id/longitude"
+                    android:layout_below="@+id/longitudeData"
+                    android:layout_marginLeft="101dp"
+                    android:layout_marginStart="101dp"
+                    android:text="- m"
+                    android:textColor="@color/primaryColor" />
+
+                <!---Light-->
+                <TextView
+                    android:id="@+id/altitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/accuracy"
+                    android:layout_alignStart="@+id/accuracy"
+                    android:layout_below="@+id/accuracy"
+                    android:text="Altitude : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/altitudeData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/accuracy"
+                    android:layout_alignStart="@+id/accuracy"
+                    android:layout_below="@+id/accuracyData"
+                    android:layout_marginLeft="101dp"
+                    android:layout_marginStart="101dp"
+                    android:text="- m"
+                    android:textColor="@color/primaryColor" />
+
+                <TextView
+                    android:id="@+id/speed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/altitude"
+                    android:layout_alignStart="@+id/altitude"
+                    android:layout_below="@+id/altitude"
+                    android:text="Speed : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/speedData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/altitude"
+                    android:layout_alignStart="@+id/altitude"
+                    android:layout_below="@+id/altitudeData"
+                    android:layout_marginLeft="101dp"
+                    android:layout_marginStart="101dp"
+                    android:text="- m/s"
+                    android:textColor="@color/primaryColor" />
+
+                <TextView
+                    android:id="@+id/time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/speed"
+                    android:layout_alignStart="@+id/speed"
+                    android:layout_below="@+id/speed"
+                    android:text="Time : "
+                    android:textColor="@color/inAppTextColor" />
+
+                <TextView
+                    android:id="@+id/timeData"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/speed"
+                    android:layout_alignStart="@+id/speed"
+                    android:layout_below="@+id/speedData"
+                    android:layout_marginLeft="101dp"
+                    android:layout_marginStart="101dp"
+                    android:text="-"
+                    android:textColor="@color/primaryColor" />
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <!---
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/gpsDataCard"
+            android:layout_marginTop="4dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="4dp"
+            >
+
+            <Button
+                android:layout_width="125dp"
+                android:layout_height="75dp"
+                android:text="BUMP"
+                android:id="@+id/bump_button"/>
+        </RelativeLayout>
+-->
+    </RelativeLayout>
+</ScrollView>

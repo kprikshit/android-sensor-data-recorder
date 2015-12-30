@@ -1,0 +1,33 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+    <string name="pref_header_general">General</string>
+    <string name="pref_header_notifications">Notifications</string>
+    <string name="pref_header_misc">Misc</string>
+    <string name="pref_header_upload">Upload</string>
+
+
+    <string name="pref_title_logging">Logging Enabled</string>
+    <string name="pref_description_logging">For Debug purposes, this should be keep switched on</string>
+
+    <string name="pref_title_server_address">Upload Server Address</string>
+    <string name="pref_default_server_address">10.1.201.41</string>
+
+    <string name="pref_title_upload_frequency">Upload Interval (In Minutes)</string>
+    <string-array name="pref_upload_frequency_titles">
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+    </string-array>
+    <string-array name="pref_upload_frequency_values">
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>720</item>
+    </string-array>
+
+    <string name="pref_title_min_upload_size">Minimum File Size to upload (MB)</string>
+
+</resources>
